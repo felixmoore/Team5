@@ -8,12 +8,14 @@ buildscript {
 	}
 	dependencies {
 
+
 	}
 }
 
 allprojects {
 	apply plugin: 'eclipse'
 	apply plugin: 'idea'
+
 }
 
 configure(subprojects) {
