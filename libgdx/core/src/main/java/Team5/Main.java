@@ -21,7 +21,7 @@ import java.util.List;
 
 //TODO edit so that the client movement is done through update requests instead of locally
 //     this will make it harder to cheat :)
-
+/** Basic setup helped by https://github.com/BrentAureli/MultiplayerDemo */
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
 	private SpriteBatch batch;
