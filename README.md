@@ -1,6 +1,5 @@
 # Team5
 A social deduction game.
-<<<<<<< Updated upstream
 =======
 
 ## Branch - hack
@@ -17,8 +16,3 @@ Progess on the first hack!
 - any movement should be reflected in the other tabs.
 
 _The chat box does nothing right now but I'm working on it!._
-
-
-
-
->>>>>>> Stashed changes
