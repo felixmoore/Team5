@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Team 5 Hack</title>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"> <!--referencing Google font-->
+
+  </head>
+  <body>
+        <h1 style="font-family:'Roboto';"> Hack: </h1>
+        <h2 style="font-family:'Roboto';"> Demonstrating local multiplayer: </h2>
+        <script src="https://cdn.socket.io/socket.io-2.3.0.js"></script> <!--referencing socket.io-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.24.1/phaser.min.js"
+        integrity="sha512-HY/qPTJqpvoNGRufGPn4Tl7duHSam8NfrfTZUHyn5M39oEBcq8p6IeGBE9e+AupikS4Utt+uJhSgG3FYZp/yxA=="
+        crossorigin="anonymous"></script><!--referencing Phaser framework-->
+        <script src="/public/js/game.js"></script>
+
+        <form id="chat">
+          <label for="chatInput">Type your message here:</label>
+          <input type="text" id="chatInput" name="chatInput">
+          <input type="submit" value="Send">
+        </form>
+
+  </body>
+</html>
