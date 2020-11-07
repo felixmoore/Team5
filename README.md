@@ -1,6 +1,6 @@
-# Team5
+# Deception
+
 A social deduction game.
-=======
 
 ## Branch - hack
 
