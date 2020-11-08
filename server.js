@@ -6,7 +6,7 @@
 * @author Felix Moore
 */
 
-const port = 3000;
+const port = process.env.PORT;
 const express = require('express');
 //const app = express();
 //const server = require('http').createServer(app);
