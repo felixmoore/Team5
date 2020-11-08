@@ -1,26 +1,22 @@
 /**
-* First hack of chat function, from [Socket.io tutorial]{@link https://socket.io/get-started/chat/}.
+* First hack of chat function, adapted from [Socket.io tutorial]{@link https://socket.io/get-started/chat/}.
 * WIP - nicknames function, broadcasting connections/disconnections, online user list, private messaging (? potential for abuse)
 * @author Felix Moore
 */
 
-const app = require('express')();
-const http = require('http').createServer(app);
-const io = require.('socket.io')(http);
-const port = 3000;
+this.socket = io();
 
-app.get('/', (req, res) => {
-  res.send('<h1>Hello world</h1>'); //basic HTML output
+
+
+
+this.socket.on('connection', (socket) => {
+  this.socket.broadcast.emit('hi');
+  console.log("connection!");
 });
 
-io.on('connection', (socket) =>){ //socket.io detects a connection, output to console.
-  console.log('user connected');
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
+this.socket.on('connection', (socket) => {
+  this.socket.on('chat message', (msg) => {
+    console.log('chat message', (msg));
+    this.socket.emit('chat message', msg);
   });
-}
-
-http.listen(port, () => {
-  console.log('listening on *:'+port);
 });

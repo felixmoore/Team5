@@ -4,22 +4,55 @@
     <title>Team 5 Hack</title>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"> <!--referencing Google font-->
+    <link href="/public/styles/style.css" rel="stylesheet">
+
+
+
 
   </head>
   <body>
-        <h1 style="font-family:'Roboto';"> Hack: </h1>
-        <h2 style="font-family:'Roboto';"> Demonstrating local multiplayer: </h2>
+        <h1> Hack: </h1>
+        <h2> Demonstrating multiplayer: </h2>
+
         <script src="/socket.io/socket.io.js"></script> <!--referencing socket.io-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.24.1/phaser.min.js"
         integrity="sha512-HY/qPTJqpvoNGRufGPn4Tl7duHSam8NfrfTZUHyn5M39oEBcq8p6IeGBE9e+AupikS4Utt+uJhSgG3FYZp/yxA=="
         crossorigin="anonymous"></script><!--referencing Phaser framework-->
-        <script src="/public/js/game.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script> <!--referencing jQuery-->
 
-        <form id="chat">
-          <label for="chatInput">Type your message here:</label>
-          <input type="text" id="chatInput" name="chatInput">
-          <input type="submit" value="Send">
-        </form>
+
+        <script src="/public/js/game.js"></script>
+        <div id="game"></div>
+        <script>
+          $(function () { //jquery
+                  var socket = io();
+                  $('#chat').submit(function(e){
+                     e.preventDefault();
+                    socket.emit('chat message', $('#chatInput').val());
+                    $('#chatInput').val('');
+                    return false;
+                  });
+                 socket.on('chat message', function(msg){
+                    $('#messages').append($('<li>').text(msg));
+                    window.scrollTo(0, document.body.scrollHeight);
+                  });
+                });
+        </script>
+
+
+
+        <div id = "chatBox">
+          <ul id="messages"></ul>
+
+          <form id="chat" action="">
+            <input id="chatInput" type="text" placeholder="Type your message here" autocomplete="off"/>
+            <button id="send">Send</button>
+          </form>
+        </div>
+
+
+
+
 
   </body>
 </html>

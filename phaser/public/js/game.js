@@ -57,6 +57,19 @@ function create() {
     });
   });
 
+
+    // document.getElementById("chat").submit(function(){
+    //   socket.emit('chat message',   document.getElementById("#chatInput").val());
+    //     document.getElementById("#chatInput").val('');
+    //   return false;
+    // });
+    // this.socket.on('chat message', function(msg){
+    //   document.getElementById("#messages").append($('<li>').text(msg));
+    //   window.scrollTo(0, document.body.scrollHeight);
+    // });
+
+  
+
   //remove player sprite when they disconnect
   this.socket.on('disconnect', (id) => {
     me.otherPlayers.getChildren().forEach((otherPlayer) => {
@@ -69,7 +82,7 @@ function create() {
   //TODO: bind WASD instead
   //TODO: key to open chat?
   this.keys = this.input.keyboard.createCursorKeys();
-  // this.cursors = this.input.keyboard.addKeys({
+  // this.keys = this.input.keyboard.addKeys({
   //   up: Phaser.Input.Keyboard.KeyCodes.W,
   //   down: Phaser.Input.Keyboard.KeyCodes.S,
   //   left: Phaser.Input.Keyboard.KeyCodes.A,

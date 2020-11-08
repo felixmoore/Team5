@@ -1,7 +1,7 @@
 /**
 * First hack for submission:
 * Uses [Node.js]{@link https://nodejs.org/en/} , [Express.js]{@link https://expressjs.com/} and [Socket.io]{@link https://socket.io/}.
-* Initial setup from [tutorial]{@link https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/}.
+* Initial setup from [this tutorial]{@link https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/} & https://socket.io/get-started/chat.
 * TODO: add seperate rooms https://socket.io/docs/rooms/#Sample-use-cases
 * @author Felix Moore
 */
@@ -21,11 +21,17 @@ app.use("/client", express.static(__dirname + '/client'));
 app.get('/', (req, res) => {
   path = require('path');
   res.sendFile(path.join(__dirname , 'public', 'index.html')); //path.join looks one level up in the directory
-//  res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', (socket) => { //socket.io detects a connection, output to console.
   console.log('User connected: ID', socket.id);
+
+  socket.username = "Anonymous" + socket.id;
+
+  socket.on('change_username', (data) => { //TODO add a button for this...
+    socket.username = data.username;
+  });
+
   //create new player
   players[socket.id] = {
     width: 40,
@@ -52,6 +58,11 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
       socket.broadcast.emit('playerMoved', players[socket.id]);
   });
 
+  //chat message
+  socket.on('chat message', (msg) =>{
+     console.log('message: ' + msg);
+      io.emit('chat message',  (socket.username + ": " + msg));
+  });
 
   //player disconnected
   socket.on('disconnect', () => {
