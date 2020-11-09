@@ -45,8 +45,9 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
     colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1,6))
   }
 
-  //client side notification
+  //load all current players
   socket.emit('currentPlayers', players);
+
   //notify other players
   socket.broadcast.emit('newPlayer', players[socket.id]);
 
@@ -58,11 +59,16 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
       socket.broadcast.emit('playerMoved', players[socket.id]);
   });
 
+
   //chat message
-  socket.on('chat message', (msg) =>{
+  socket.on('newMessage', (msg) =>{
      console.log('message: ' + msg);
-      io.emit('chat message',  (socket.username + ": " + msg));
+      io.emit('newMessage',  (socket.username + ": " + msg));
+      //socket.broadcast.emit('chat message',  (socket.username + ": " + msg));
+      //$('#messages').append($('<li>').text(msg));
+
   });
+
 
   //player disconnected
   socket.on('disconnect', () => {
