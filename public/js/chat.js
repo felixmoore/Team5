@@ -8,14 +8,14 @@
 
 this.socket = io();
 
-this.socket.on('connection', (socket) => {
-  this.socket.broadcast.emit('hi');
+this.socket.on("connection", (socket) => {
+  this.socket.broadcast.emit("hi");
   console.log("connection!");
 });
 
-this.socket.on('connection', (socket) => {
-  this.socket.on('chat message', (msg) => {
-    console.log('chat message', (msg));
-    this.socket.emit('chat message', msg);
+this.socket.on("connection", (socket) => {
+  this.socket.on("chat message", (msg) => {
+    console.log("chat message", msg);
+    this.socket.emit("chat message", msg);
   });
 });

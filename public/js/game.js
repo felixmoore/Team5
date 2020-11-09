@@ -1,25 +1,27 @@
 let config = {
-  type : Phaser.AUTO, // WebGL if available, Canvas otherwise
-  parent : 'game', // renders in a <canvas> element with id game //TODO rename
-                   // if we have a name
-  width : 800, // TODO change to relative size?
-  height : 600,
+  type: Phaser.AUTO, // WebGL if available, Canvas otherwise
+  parent: "game", // renders in a <canvas> element with id game //TODO rename
+  // if we have a name
+  width: 800, // TODO change to relative size?
+  height: 600,
 
-  physics : {
+  physics: {
     // physics framework from Phaser
-    default : 'arcade',
-    arcade : {
-      debug : false,
+    default: "arcade",
+    arcade: {
+      debug: false,
       //  velocity: 1,
-      gravity : {y : 0}
-    }
+      gravity: { y: 0 },
+    },
   },
-  scene : {preload : preload, create : create, update : update}
+  scene: { preload: preload, create: create, update: update },
 };
 
 const game = new Phaser.Game(config);
 
-function preload() { this.load.image('circle', 'public/assets/circle.png'); }
+function preload() {
+  this.load.image("circle", "public/assets/circle.png");
+}
 
 function create() {
   let me = this; // avoids confusion with 'this' object when scope changes
@@ -27,7 +29,7 @@ function create() {
   this.otherPlayers = this.physics.add.group();
 
   // load currently connected players
-  this.socket.on('currentPlayers', (players) => {
+  this.socket.on("currentPlayers", (players) => {
     Object.keys(players).forEach((index) => {
       if (players[index].id === me.socket.id) {
         addPlayer(me, players[index]);
@@ -38,11 +40,12 @@ function create() {
   });
 
   // add new player to client on connection event
-  this.socket.on('newPlayer',
-                 (playerInfo) => { addOtherPlayer(me, playerInfo); });
+  this.socket.on("newPlayer", (playerInfo) => {
+    addOtherPlayer(me, playerInfo);
+  });
 
   // update sprite location on player movement
-  this.socket.on('playerMoved', (data) => {
+  this.socket.on("playerMoved", (data) => {
     me.otherPlayers.getChildren().forEach((otherPlayer) => {
       if (data.id === otherPlayer.id) {
         otherPlayer.setPosition(data.x, data.y);
@@ -53,24 +56,22 @@ function create() {
   // TODO move this to chat.js
   // jquery to handle new message & clear chat box
   let socket = this.socket;
-  $('#chat').submit(function(e) {
+  $("#chat").submit(function (e) {
     e.preventDefault();
-    socket.emit('newMessage', $('#chatInput').val());
-    $('#chatInput').val('');
+    socket.emit("newMessage", $("#chatInput").val());
+    $("#chatInput").val("");
     return true;
   });
 
   // adds message to chat
-  this.socket.on('newMessage', (msg) => {
-    $('#messages').append($('<li>').text(msg));
-    window.scrollTo(
-        0, document.body
-               .scrollHeight); // TODO make older messages move off the screen
+  this.socket.on("newMessage", (msg) => {
+    $("#messages").append($("<li>").text(msg));
+    window.scrollTo(0, document.body.scrollHeight); // TODO make older messages move off the screen
   });
   // end todo section
 
   // remove player sprite when they disconnect
-  this.socket.on('disconnect', (id) => {
+  this.socket.on("disconnect", (id) => {
     me.otherPlayers.getChildren().forEach((otherPlayer) => {
       if (id === otherPlayer.id) {
         otherPlayer.destroy();
@@ -91,26 +92,28 @@ function create() {
 
 function addPlayer(me, playerInfo) {
   // TODO change playerImage to something more descriptive
-  me.player = me.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle')
-                  .setDisplaySize(playerInfo.width, playerInfo.height)
-                  .setOrigin(0, 0);
+  me.player = me.physics.add
+    .sprite(playerInfo.x, playerInfo.y, "circle")
+    .setDisplaySize(playerInfo.width, playerInfo.height)
+    .setOrigin(0, 0);
 
   me.player.setTint(playerInfo.colour);
 }
 
 function addOtherPlayer(me, playerInfo) {
-  const otherPlayer = me.add.sprite(playerInfo.x, playerInfo.y, 'circle')
-                          .setDisplaySize(playerInfo.width, playerInfo.height)
-                          .setOrigin(0, 0);
+  const otherPlayer = me.add
+    .sprite(playerInfo.x, playerInfo.y, "circle")
+    .setDisplaySize(playerInfo.width, playerInfo.height)
+    .setOrigin(0, 0);
   otherPlayer.setTint(playerInfo.colour);
   otherPlayer.id = playerInfo.id;
   me.otherPlayers.add(otherPlayer);
 }
 
 function update() {
-
   // TODO add movement
-  if (this.player) { // TODO add a check for chat window closed
+  if (this.player) {
+    // TODO add a check for chat window closed
 
     if (this.keys.left.isDown) {
       this.player.setVelocityX(-160);
@@ -131,13 +134,16 @@ function update() {
     // emit update
     var x = this.player.x;
     var y = this.player.y;
-    if (this.player.previous &&
-        (x !== this.player.previous.x || y !== this.player.previous.y)) {
-
-      this.socket.emit('playerMovement',
-                       {x : this.player.x, y : this.player.y});
+    if (
+      this.player.previous &&
+      (x !== this.player.previous.x || y !== this.player.previous.y)
+    ) {
+      this.socket.emit("playerMovement", {
+        x: this.player.x,
+        y: this.player.y,
+      });
     }
 
-    this.player.previous = {x : this.player.x, y : this.player.y};
+    this.player.previous = { x: this.player.x, y: this.player.y };
   }
 }
