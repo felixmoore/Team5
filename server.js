@@ -1,21 +1,16 @@
 /**
 * First hack for submission:
 * Uses [Node.js]{@link https://nodejs.org/en/} , [Express.js]{@link https://expressjs.com/} and [Socket.io]{@link https://socket.io/}.
-* Initial setup from [tutorial]{@link https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/}.
+* Initial setup from [this tutorial]{@link https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/} & https://socket.io/get-started/chat.
 * TODO: add seperate rooms https://socket.io/docs/rooms/#Sample-use-cases
 * @author Felix Moore
 */
 
 const port = process.env.PORT;
 const express = require('express');
-//const app = express();
-//const server = require('http').createServer(app);
-//const io = require('socket.io').listen(server);
-
-
-var app = require('express')();
-var server = require('http').createServer(app);
-var io = require('socket.io')(server);
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io').listen(server);
 let players = {};
 let width = 800;
 let height = 600;
@@ -26,11 +21,16 @@ app.use("/client", express.static(__dirname + '/client'));
 app.get('/', (req, res) => {
   path = require('path');
   res.sendFile(path.join(__dirname , 'public', 'index.html')); //path.join looks one level up in the directory
-//  res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', (socket) => { //socket.io detects a connection, output to console.
   console.log('User connected: ID', socket.id);
+
+  socket.username = "Anonymous" + socket.id;
+  socket.on('change_username', (data) => { //TODO add a button for this...
+    socket.username = data.username;
+  });
+
   //create new player
   players[socket.id] = {
     width: 40,
@@ -44,9 +44,10 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
     colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1,6))
   }
 
-  //client side notification
+  //load all current players
   socket.emit('currentPlayers', players);
-  //notify other players
+
+  //notify other players of new connection
   socket.broadcast.emit('newPlayer', players[socket.id]);
 
   socket.on('playerMovement', (data) => {
@@ -55,6 +56,16 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
 
       // emit new location data to all other players
       socket.broadcast.emit('playerMoved', players[socket.id]);
+  });
+
+
+  //chat message
+  socket.on('newMessage', (msg) =>{
+     console.log('message: ' + msg);
+      io.emit('newMessage',  (socket.username + ": " + msg));
+      //socket.broadcast.emit('chat message',  (socket.username + ": " + msg));
+      //$('#messages').append($('<li>').text(msg));
+
   });
 
 

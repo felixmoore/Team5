@@ -1,7 +1,7 @@
 let config = {
   type: Phaser.AUTO, //WebGL if available, Canvas otherwise
   parent: 'game', //renders in a <canvas> element with id game //TODO rename if we have a name
-  width: 800, //TODO change to relative size
+  width: 800, //TODO change to relative size?
   height: 600,
 
   physics: { //physics framework from Phaser
@@ -57,6 +57,23 @@ function create() {
     });
   });
 
+//TODO move this to chat.js
+  //jquery to handle new message & clear chat box
+  let socket = this.socket;
+  $('#chat').submit(function(e) {
+    e.preventDefault();
+    socket.emit('newMessage', $('#chatInput').val());
+    $('#chatInput').val('');
+    return true;
+  });
+
+  //adds message to chat
+  this.socket.on('newMessage', (msg) => {
+    $('#messages').append($('<li>').text(msg));
+      window.scrollTo(0, document.body.scrollHeight); //TODO make older messages move off the screen
+  });
+  //end todo section
+
   //remove player sprite when they disconnect
   this.socket.on('disconnect', (id) => {
     me.otherPlayers.getChildren().forEach((otherPlayer) => {
@@ -69,7 +86,7 @@ function create() {
   //TODO: bind WASD instead
   //TODO: key to open chat?
   this.keys = this.input.keyboard.createCursorKeys();
-  // this.cursors = this.input.keyboard.addKeys({
+  // this.keys = this.input.keyboard.addKeys({
   //   up: Phaser.Input.Keyboard.KeyCodes.W,
   //   down: Phaser.Input.Keyboard.KeyCodes.S,
   //   left: Phaser.Input.Keyboard.KeyCodes.A,
@@ -112,8 +129,6 @@ function update() {
     } else{
       this.player.setVelocityY(0);
     }
-
-
 
     //emit update
     var x = this.player.x;

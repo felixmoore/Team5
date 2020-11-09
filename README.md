@@ -4,7 +4,7 @@ A social deduction game.
 
 ## Branch - hack
 
-Progress on the first hack!
+Progress on the first hack, now with chat! (hopefully)
 
 ### How to run this?:
 Go to https://deception-game.herokuapp.com/!
@@ -21,4 +21,4 @@ Go to https://deception-game.herokuapp.com/!
 - in your browser, open up http://localhost:3000/ in a couple of different tabs.
 - any movement should be reflected in the other tabs.
 
-_The chat box does nothing right now but I'm working on it! (some functionality in the chat branch)_
+
