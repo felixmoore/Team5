@@ -8,6 +8,8 @@
 
 #wrapper {
   width: 90%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 form {
@@ -36,10 +38,18 @@ form input[type="text"] {
   display: flex;
 }
 
-#chatInput, #chatSubmit {
+.container-box {
+  border: 3px solid green;
+  margin: 1%;
   flex: 1;
 }
 
-#messages { list-style-type: none; margin: 0; padding: 0; position: fixed; }
+#messages { 
+  list-style-type: none; 
+  margin: 0; 
+  padding: 0; 
+  position: fixed; 
+}
+
 #messages li { padding: 5px 10px; }
 #messages li:nth-child(odd) { background: #eee; }
