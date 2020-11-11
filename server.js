@@ -6,12 +6,14 @@
 * @author Felix Moore
 */
 
+
 const port = process.env.PORT;
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
 let players = {};
+let objects = {};
 let width = 800;
 let height = 600;
 
@@ -27,6 +29,8 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
   console.log('User connected: ID', socket.id);
 
   socket.username = "Anonymous" + socket.id;
+
+
   socket.on('change_username', (data) => { //TODO add a button for this...
     socket.username = data.username;
   });
@@ -44,10 +48,27 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
     colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1,6))
   }
 
+  objects['button_a'] = {
+    width: 36,
+    height: 36,
+    x: 60,
+    y: 60,
+    image: 'button_a'
+  }
+  objects['button_b'] = {
+    width: 36,
+    height: 36,
+    x: 660,
+    y: 460,
+    image: 'button_b'
+  }
+
   //load all current players
   socket.emit('currentPlayers', players);
+  /** */
+  socket.emit('drawObjects', objects);
+  //notify other players
 
-  //notify other players of new connection
   socket.broadcast.emit('newPlayer', players[socket.id]);
 
   socket.on('playerMovement', (data) => {

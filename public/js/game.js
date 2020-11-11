@@ -25,12 +25,20 @@ const game = new Phaser.Game(config);
 
 function preload() {
   this.load.image('circle', 'public/assets/circle.png');
+  this.load.image('button_a', 'public/assets/button_a.png');
+  this.load.image('button_b', 'public/assets/button_b.png');
 }
 
 function create() {
   let me = this; //avoids confusion with 'this' object when scope changes
   this.socket = io();
   this.otherPlayers = this.physics.add.group();
+
+  this.socket.on('drawObjects', (objects) => {
+    Object.keys(objects).forEach( o => {
+      me.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0);
+    });
+  });
 
   //load currently connected players
   this.socket.on('currentPlayers', (players) => {
@@ -69,7 +77,8 @@ function create() {
 
   //adds message to chat
   this.socket.on('newMessage', (msg) => {
-    $('#messages').append($('<li>').text(msg));
+    $('#messages').prepend($('<li>').text(msg));
+
       window.scrollTo(0, document.body.scrollHeight); //TODO make older messages move off the screen
   });
   //end todo section
@@ -109,6 +118,15 @@ function addOtherPlayer(me, playerInfo) {
   me.otherPlayers.add(otherPlayer);
 }
 
+
+function checkLocation(me) {
+  if (me.player.x < 100 && me.player.y < 100) {
+    me.player.x += 600;
+    me.player.y += 400;
+  }
+}
+
+
 function update() {
 
   //TODO add movement
@@ -117,18 +135,24 @@ function update() {
     if (this.keys.left.isDown) {
       this.player.setVelocityX(-160);
     } else if (this.keys.right.isDown) {
-      this.player.setVelocityX(160);
-    } else{
+
+      this.player.setVelocityX( 160);
+    } else {
+
       this.player.setVelocityX(0); //stop moving
     }
 
     if (this.keys.up.isDown) {
       this.player.setVelocityY(-160);
     } else if (this.keys.down.isDown) {
-      this.player.setVelocityY(160);
-    } else{
+
+      this.player.setVelocityY( 160);
+    } else {
       this.player.setVelocityY(0);
     }
+
+    checkLocation(this);
+
 
     //emit update
     var x = this.player.x;

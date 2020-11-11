@@ -15,44 +15,24 @@
 
   </head>
   <body>
-        <h1> Hack: </h1>
-        <h2> Demonstrating multiplayer: </h2>
 
-
-
-
+        <h1> Hack </h1>
+        <h2> Demonstrating multiplayer + chat </h2>
+        
         <script src="/public/js/game.js"></script>
-        <div id="game"></div>
-        <!-- <script>//TODO - this needs to be converted to regular js & moved out of the html file if possible?
-        //https://github.com/socketio/chat-example/blob/master/index.html
-          $(function () { //jquery
-                  var socket = io();
-                  $('#chat').submit(function(e){
-                     e.preventDefault();
-                    socket.emit('chat message', $('#chatInput').val());
-                    $('#chatInput').val('');
-                    return false;
-                  });
-                 socket.on('chat message', function(msg){
-                    $('#messages').append($('<li>').text(msg));
-                    window.scrollTo(0, document.body.scrollHeight);
-                  });
-                });
-        </script> -->
+        <div id="wrapper">
+          <div class="container">
+            <div class="container-box" id="game"></div>
+            <div class="container-box" id="chatBox">
+              <form class="container" id="chat" action="">
+                <input id="chatInput" type="text" placeholder="Type your message here" autocomplete="off"/>
+                <input id="chatSubmit" type="submit" id="send" value="Send"/>
+              </form>
+              <ul id="messages"></ul>
+            </div>
+          </div>
 
-
-
-        <div id = "chatBox">
-          <ul id="messages"></ul>
-
-          <form id="chat" action="">
-            <input id="chatInput" type="text" placeholder="Type your message here" autocomplete="off"/>
-            <input type="submit" id="send" value="Send"/>
-          </form>
         </div>
-
-
-
 
 
   </body>
