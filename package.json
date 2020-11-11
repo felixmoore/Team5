@@ -2,7 +2,7 @@
   "name": "hack",
   "version": "1.0.0",
   "description": "First hack for submission",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "test": ""
   },

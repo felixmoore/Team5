@@ -78,6 +78,7 @@ function create() {
   //adds message to chat
   this.socket.on('newMessage', (msg) => {
     $('#messages').prepend($('<li>').text(msg));
+
       window.scrollTo(0, document.body.scrollHeight); //TODO make older messages move off the screen
   });
   //end todo section
@@ -117,12 +118,14 @@ function addOtherPlayer(me, playerInfo) {
   me.otherPlayers.add(otherPlayer);
 }
 
+
 function checkLocation(me) {
   if (me.player.x < 100 && me.player.y < 100) {
     me.player.x += 600;
     me.player.y += 400;
   }
 }
+
 
 function update() {
 
@@ -132,20 +135,24 @@ function update() {
     if (this.keys.left.isDown) {
       this.player.setVelocityX(-160);
     } else if (this.keys.right.isDown) {
+
       this.player.setVelocityX( 160);
     } else {
+
       this.player.setVelocityX(0); //stop moving
     }
 
     if (this.keys.up.isDown) {
       this.player.setVelocityY(-160);
     } else if (this.keys.down.isDown) {
+
       this.player.setVelocityY( 160);
     } else {
       this.player.setVelocityY(0);
     }
 
     checkLocation(this);
+
 
     //emit update
     var x = this.player.x;

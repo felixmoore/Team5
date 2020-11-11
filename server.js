@@ -6,7 +6,8 @@
 * @author Felix Moore
 */
 
-const port = 3000;
+
+const port = process.env.PORT;
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -28,6 +29,7 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
   console.log('User connected: ID', socket.id);
 
   socket.username = "Anonymous" + socket.id;
+
 
   socket.on('change_username', (data) => { //TODO add a button for this...
     socket.username = data.username;
@@ -66,6 +68,7 @@ io.on('connection', (socket) => { //socket.io detects a connection, output to co
   /** */
   socket.emit('drawObjects', objects);
   //notify other players
+
   socket.broadcast.emit('newPlayer', players[socket.id]);
 
   socket.on('playerMovement', (data) => {
