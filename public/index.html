@@ -22,33 +22,36 @@
 
 
         <script src="/public/js/game.js"></script>
-        <div id="game"></div>
-        <!-- <script>//TODO - this needs to be converted to regular js & moved out of the html file if possible?
-        //https://github.com/socketio/chat-example/blob/master/index.html
-          $(function () { //jquery
-                  var socket = io();
-                  $('#chat').submit(function(e){
-                     e.preventDefault();
-                    socket.emit('chat message', $('#chatInput').val());
-                    $('#chatInput').val('');
-                    return false;
+        <div id="wrapper">
+        <div class="container">
+          <div id="game"></div>
+          <!-- <script>//TODO - this needs to be converted to regular js & moved out of the html file if possible?
+          //https://github.com/socketio/chat-example/blob/master/index.html
+            $(function () { //jquery
+                    var socket = io();
+                    $('#chat').submit(function(e){
+                      e.preventDefault();
+                      socket.emit('chat message', $('#chatInput').val());
+                      $('#chatInput').val('');
+                      return false;
+                    });
+                  socket.on('chat message', function(msg){
+                      $('#messages').append($('<li>').text(msg));
+                      window.scrollTo(0, document.body.scrollHeight);
+                    });
                   });
-                 socket.on('chat message', function(msg){
-                    $('#messages').append($('<li>').text(msg));
-                    window.scrollTo(0, document.body.scrollHeight);
-                  });
-                });
-        </script> -->
+          </script> -->
 
 
 
-        <div id = "chatBox">
-          <ul id="messages"></ul>
-
-          <form id="chat" action="">
-            <input id="chatInput" type="text" placeholder="Type your message here" autocomplete="off"/>
-            <input type="submit" id="send" value="Send"/>
-          </form>
+          <div id="chatBox">
+            <form class="container" id="chat" action="">
+              <input id="chatInput" type="text" placeholder="Type your message here" autocomplete="off"/>
+              <input id="chatSubmit" type="submit" id="send" value="Send"/>
+            </form>
+            <ul id="messages"></ul>
+          </div>
+        </div>
         </div>
 
 

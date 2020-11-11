@@ -69,7 +69,7 @@ function create() {
 
   //adds message to chat
   this.socket.on('newMessage', (msg) => {
-    $('#messages').append($('<li>').text(msg));
+    $('#messages').prepend($('<li>').text(msg));
       window.scrollTo(0, document.body.scrollHeight); //TODO make older messages move off the screen
   });
   //end todo section
