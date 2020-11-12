@@ -23,6 +23,14 @@ let config = {
 
 const game = new Phaser.Game(config);
 
+let nameChanged = false;
+let data = {};
+
+function setName(new_name) {
+  data.username = new_name;
+  nameChanged = true;
+}
+
 function preload() {
   this.load.image('circle', 'public/assets/circle.png');
   this.load.image('button_a', 'public/assets/button_a.png');
@@ -128,6 +136,11 @@ function checkLocation(me) {
 
 
 function update() {
+
+  if (nameChanged) {
+    this.socket.emit('change_username', data);
+    !nameChanged;
+  }
 
   //TODO add movement
   if (this.player) { //TODO add a check for chat window closed
