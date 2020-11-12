@@ -24,9 +24,15 @@
           <div class="container">
             <div class="container-box" id="game"></div>
             <div class="container-box" id="chatBox">
-              <form class="container" id="chat" action="">
-                <input id="chatInput" type="text" placeholder="Type your message here" autocomplete="off"/>
-                <input id="chatSubmit" type="submit" id="send" value="Send"/>
+              <div class="container" id="nameInputBox">
+                  <input id="nameInput" type="text" placeholder="Set your name here" autocomplete="off"/>
+                  <button type="button" onclick="setName(document.getElementById('nameInput').value)"> Set </button>
+              </div>
+              <form id="chat" action="">
+                <div class="container">
+                  <input id="chatInput" type="text" placeholder="Type your message here" autocomplete="off"/>
+                  <input id="chatSubmit" type="submit" id="send" value="Send"/>
+                </div>
               </form>
               <ul id="messages"></ul>
             </div>

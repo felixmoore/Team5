@@ -7,7 +7,8 @@
 */
 
 
-const port = process.env.PORT;
+const port = process.env.PORT; // uncomment before push
+// const port = 3000; // uncomment for local use
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
