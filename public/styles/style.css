@@ -1,0 +1,75 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family:'Roboto';
+}
+
+#wrapper {
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+form {
+  padding: 3px;
+  /* position: fixed; */
+  /* bottom: 0; */
+  width: 100%;
+}
+
+form input {
+  margin: 0.5%;
+}
+
+form input[type="submit"] {
+  width: 9%;
+  background: rgb(130, 224, 255);
+  border: none;
+  padding: 10px;
+}
+
+form input[type="text"] {
+  border: 1px solid black;
+  padding: 10px;
+  width: 90%;
+  background: white;
+}
+
+.container {
+  display: flex;
+}
+
+.container-box {
+  border: 3px solid green;
+  margin: 1%;
+  flex: 1;
+}
+
+#messages { 
+  list-style-type: none; 
+  margin: 0; 
+  padding: 0; 
+  position: fixed; 
+}
+
+#nameInputBox {
+  background-color: green;
+}
+
+#nameInputBox button {
+  padding: 5px;
+  width: 10%;
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+#nameInputBox input {
+  padding: 1%;
+  width: 40%;
+  margin: 1%;
+}
+
+#messages li { padding: 5px 10px; }
+#messages li:nth-child(odd) { background: #eee; }
