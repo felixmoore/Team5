@@ -2,12 +2,13 @@
 
 A social deduction game.
 
-## Branch - main
+## Branch - MVP
 
-Progress on the first hack, now with chat & magic portals!
+Progress on the Minimum Viable Product.
 
 ### How to run this?:
 Go to https://deception-game.herokuapp.com/!
+**NOTE this is based on the hack branch, I'll switch it over eventually but for now just run this branch locally :)**
 
 #### How to run it locally?
 
