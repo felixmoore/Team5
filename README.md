@@ -2,7 +2,7 @@
 
 A social deduction game.
 
-## Branch - hack
+## Branch - main
 
 Progress on the first hack, now with chat & magic portals!
 
