@@ -28,6 +28,7 @@ const game = new Phaser.Game(config); // eslint-disable-line
 
 let nameChanged = false;
 let data = {};
+let allPlayers = {};
 
 function setName (newName) {
   data.username = newName;
@@ -53,6 +54,7 @@ function create () {
 
   // load currently connected players
   this.socket.on('currentPlayers', (players) => {
+    allPlayers = players;
     Object.keys(players).forEach((index) => {
       if (players[index].id === me.socket.id) {
         addPlayer(me, players[index]);
@@ -65,6 +67,9 @@ function create () {
   // add new player to client on connection event
   this.socket.on('newPlayer', (playerInfo) => {
     addOtherPlayer(me, playerInfo);
+    console.log(playerInfo);
+    console.log(allPlayers);
+    allPlayers[playerInfo.id] = playerInfo;
   });
 
   // update sprite location on player movement
@@ -74,6 +79,21 @@ function create () {
         otherPlayer.setPosition(data.x, data.y);
       }
     });
+  });
+
+  // update sprite colour - for impostor demo + useful for customisation in future
+  this.socket.on('colourUpdate', (data, colour) => {
+    me.otherPlayers.getChildren().forEach((otherPlayer) => {
+      if (data === otherPlayer.id) {
+        otherPlayer.setTint(colour);
+        this.socket.emit('colourUpdated', data, colour);
+      }
+    });
+
+    if (data.id === me.player.id) {
+      me.player.setTint(colour);
+      this.socket.emit('colourUpdated', data, colour);
+    }
   });
 
   // TODO move this to chat.js
@@ -95,6 +115,19 @@ function create () {
   /* eslint-enable */
   // end todo section
 
+  // TODO move this server side
+  // jquery to handle impostor generation
+  /* eslint-disable */
+  $('#generateImpostor').click(function(e) { 
+    e.preventDefault();
+    var key = Object.keys(allPlayers);
+    let picked = allPlayers[key[ key.length * Math.random() << 0]];
+    socket.emit('impostorGenerated', picked.id);
+    console.log('picked' + picked.id);
+  });
+  /* eslint-enable */
+  // end todo section
+
   // remove player sprite when they disconnect
   this.socket.on('disconnect', (id) => {
     me.otherPlayers.getChildren().forEach((otherPlayer) => {
@@ -106,15 +139,6 @@ function create () {
 
   // TODO: bind WASD instead
   // TODO: key to open chat?
-  // this.keys = this.input.keyboard.createCursorKeys();
-  // let keyObj = game.input.keyboard.addKey('W', enableCapture, emitOnRepeat);
-  // this.keys = this.input.keyboard.addKeys({
-  //   up: Phaser.Input.Keyboard.KeyCodes.W,
-  //   down: Phaser.Input.Keyboard.KeyCodes.S,
-  //   left: Phaser.Input.Keyboard.KeyCodes.A,
-  //   right: Phaser.Input.Keyboard.KeyCodes.D
-  // });
-
   game.keys = this.input.keyboard.addKeys({
     up: 'up',
     down: 'down',
@@ -124,9 +148,7 @@ function create () {
 }
 
 function addPlayer (me, playerInfo) {
-  // TODO change playerImage to something more descriptive
   me.player = me.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
-
   me.player.setTint(playerInfo.colour);
 }
 
@@ -150,8 +172,7 @@ function update () {
     !nameChanged;
   }
 
-  // TODO add movement
-  if (this.player) { // TODO add a check for chat window closed
+  if (this.player) { 
     if (game.keys.left.isDown) {
       this.player.setVelocityX(-160);
     } else if (game.keys.right.isDown) {
@@ -185,5 +206,5 @@ function update () {
 }
 
 function configureSocketEvents(){
-
+  //TODO move all the socket config into here + refer to other functions to tidy up
 }

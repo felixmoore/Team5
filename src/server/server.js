@@ -70,12 +70,22 @@ module.exports.initialiseServer = function (app) {
       socket.broadcast.emit('playerMoved', players[socket.id]);
     });
 
+    // TODO this isn't being fired so the colour change doesn't stick
+    socket.on('colourUpdated', (data, colour) => {
+      players[data].colour = colour;
+    });
+
+
     // chat message
     socket.on('newMessage', (msg) => {
-      console.log('message: ' + msg);
       io.emit('newMessage', (socket.username + ': ' + msg));
-      // socket.broadcast.emit('chat message',  (socket.username + ": " + msg));
-      // $('#messages').append($('<li>').text(msg));
+    });
+
+    socket.on('impostorGenerated', (picked) => {
+      io.emit('colourUpdate', picked, 0xFF0000); // turns the impostor red - just to demonstrate for now
+      // TODO change this to a secret flag in player object
+      // TODO make sure impostor can either only be generated once
+      // or that if it's generated again, the previous impostor's flag is set to false
     });
 
     // player disconnected
