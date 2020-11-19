@@ -20,7 +20,7 @@ Go to https://deception-game.herokuapp.com/!
 - in your terminal, navigate to the `Team5` folder (or wherever you store the project files)
 - run `npm install`
 - in the `server.js` file change `const port` to = 3000.
-- run `node server.js`
+- run `node start.js`
 - in your browser, open up http://localhost:3000/ in a couple of different tabs.
 - any movement should be reflected in the other tabs.
 
