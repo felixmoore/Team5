@@ -6,6 +6,8 @@
 * @author Felix Moore
 */
 
+const { deflateRawSync } = require('zlib');
+
 module.exports.initialiseServer = function (app) {
   const port = process.env.PORT; // uncomment before push
   // const port = 3000; // uncomment for local use
@@ -13,7 +15,7 @@ module.exports.initialiseServer = function (app) {
   const server = require('http').createServer(app);
   const io = require('socket.io').listen(server);
   const players = {};
-  const objects = {};
+  const gameState = {}; //??
   const width = 800;
   const height = 600;
 
@@ -27,7 +29,7 @@ module.exports.initialiseServer = function (app) {
     });
 
     // create new player
-    players[socket.id] = {
+    players[socket.id] = { 
       width: 40,
       height: 40,
       // places new player at random location
@@ -39,25 +41,35 @@ module.exports.initialiseServer = function (app) {
       colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6))
     };
 
-    objects.button_a = {
+    /**
+     * These objects will eventually be from classes
+     */
+    gameState.objects = {};
+
+    gameState.objects['button_a'] = {
       width: 36,
       height: 36,
       x: 60,
       y: 60,
-      image: 'button_a'
+      image: 'button_a',
+      linkedTo: 'button_b'
     };
-    objects.button_b = {
+    gameState.objects['button_b'] = {
       width: 36,
       height: 36,
       x: 660,
       y: 460,
-      image: 'button_b'
+      image: 'button_b',
+      linkedTo: 'button_a'
     };
+
+    /** 
+     * Draw object layer first.
+    */
+    socket.emit('drawObjects', gameState.objects);
 
     // load all current players
     socket.emit('currentPlayers', players);
-    /** */
-    socket.emit('drawObjects', objects);
     // notify other players
 
     socket.broadcast.emit('newPlayer', players[socket.id]);
@@ -66,15 +78,14 @@ module.exports.initialiseServer = function (app) {
       players[socket.id].x = data.x;
       players[socket.id].y = data.y;
 
-      // emit new location data to all other players
       socket.broadcast.emit('playerMoved', players[socket.id]);
+      // io.sockets.emit('movement', players[socket.id]);
     });
 
     // TODO this isn't being fired so the colour change doesn't stick
     socket.on('colourUpdated', (data, colour) => {
       players[data].colour = colour;
     });
-
 
     // chat message
     socket.on('newMessage', (msg) => {
@@ -96,9 +107,19 @@ module.exports.initialiseServer = function (app) {
     });
   });
 
-  // setInterval(() => {
-  //   io.sockets.emit('state', gameState);
-  // }, 1000 / 60); //emit game state 60 times per second
+  /**
+   * Currently sending the state of all objects (only 2 currently)
+   * per transaction.
+   * 
+   * Should it occur this way? Actions on the client should be sent
+   * to the server and the server state updated (consolidate game state
+   * in one location), then client should subscribe to changes in state
+   * and update accordingly. i.e. this is the propogation of the data
+   * back to the 'view'
+   */
+  setInterval(() => {
+      io.sockets.emit('sendState', gameState.objects);
+  }, 1000 / 30); //emit game state 30 times per second
 
   server.listen(port, () => {
     console.log('Listening on *:' + port);

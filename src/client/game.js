@@ -24,11 +24,13 @@ const config = {
   }
 };
 
-const game = new Phaser.Game(config); // eslint-disable-line
+var game = new Phaser.Game(config); // eslint-disable-line
+
 
 let nameChanged = false;
 let data = {};
 let allPlayers = {};
+
 
 function setName (newName) {
   data.username = newName;
@@ -45,6 +47,7 @@ function create () {
   const me = this; // avoids confusion with 'this' object when scope changes
   this.socket = io(); // eslint-disable-line
   this.otherPlayers = this.physics.add.group();
+  this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
 
   this.socket.on('drawObjects', (objects) => {
     Object.keys(objects).forEach(o => {
@@ -72,7 +75,17 @@ function create () {
     allPlayers[playerInfo.id] = playerInfo;
   });
 
-  // update sprite location on player movement
+  /**
+   * Iterates otherPlayers (all players exclusive of 'this' player).
+   * 
+   * If the player that moved = this.player, no action taken since
+   *  this.player not contained within otherPlayers.
+   * 
+   * If the player that moved is in otherPlayers (i.e. the moving player
+   *  is another), update the location of the player respective of the
+   *  current player
+   * 
+   */
   this.socket.on('playerMoved', (data) => {
     me.otherPlayers.getChildren().forEach((otherPlayer) => {
       if (data.id === otherPlayer.id) {
@@ -137,6 +150,35 @@ function create () {
     });
   });
 
+  /**
+   * Different implementation of playerMoved that also 
+   * updates the current player perspective.
+   * 
+   * Useful if some transformation (i.e. portal jump)
+   * happens on the server side.
+   * 
+   * Temporary hack. 
+   */
+  this.socket.on('movement', function(other) {
+    if (me.player.id == other.id) {
+      me.player.setPosition(other.x, other.y);
+    }
+    else {
+      me.otherPlayers.getChildren().forEach((otherPlayer) => {
+        if (other.id === otherPlayer.id) {
+          otherPlayer.setPosition(other.x, other.y);
+        }
+      });
+    }
+  });
+
+  /**
+   * Updates the local state.
+   */
+  this.socket.on('sendState', function(state) {
+    me.localState = state;
+  });
+
   // TODO: bind WASD instead
   // TODO: key to open chat?
   game.keys = this.input.keyboard.addKeys({
@@ -159,10 +201,29 @@ function addOtherPlayer (me, playerInfo) {
   me.otherPlayers.add(otherPlayer);
 }
 
-function checkLocation (me) {
-  if (me.player.x < 100 && me.player.y < 100) {
-    me.player.x += 600;
-    me.player.y += 400;
+/**
+ * 
+ * @param {} me 
+ */
+function checkCollision (me) {
+
+  let locState = me.localState;
+
+  for (let ob in locState) {
+    
+    // establish bounds of current object
+    let current = locState[ob];
+    let currentX = current.x;
+    let currentXX = currentX + current.width; 
+    let currentY = current.y;
+    let currentYY = currentY + current.height;
+
+    // if player is within the bounds of the current object
+    if (me.player.x > currentX && me.player.x < currentXX && 
+        me.player.y > currentY && me.player.y < currentYY) {
+          me.player.x = locState[current.linkedTo].x; // only portals currently, so transform to linked portal
+          me.player.y = locState[current.linkedTo].y; //     
+    }
   }
 }
 
@@ -188,7 +249,7 @@ function update () {
       this.player.setVelocityY(0);
     }
 
-    checkLocation(this);
+    checkCollision(this);
 
     // emit update
     const x = this.player.x;
