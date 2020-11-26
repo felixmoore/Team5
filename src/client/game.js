@@ -26,11 +26,9 @@ const config = {
 
 var game = new Phaser.Game(config); // eslint-disable-line
 
-
 let nameChanged = false;
 let data = {};
 let allPlayers = {};
-
 
 function setName (newName) {
   data.username = newName;
@@ -49,65 +47,7 @@ function create () {
   this.otherPlayers = this.physics.add.group();
   this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
 
-  this.socket.on('drawObjects', (objects) => {
-    Object.keys(objects).forEach(o => {
-      me.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0);
-    });
-  });
-
-  // load currently connected players
-  this.socket.on('currentPlayers', (players) => {
-    allPlayers = players;
-    Object.keys(players).forEach((index) => {
-      if (players[index].id === me.socket.id) {
-        addPlayer(me, players[index]);
-      } else {
-        addOtherPlayer(me, players[index]);
-      }
-    });
-  });
-
-  // add new player to client on connection event
-  this.socket.on('newPlayer', (playerInfo) => {
-    addOtherPlayer(me, playerInfo);
-    console.log(playerInfo);
-    console.log(allPlayers);
-    allPlayers[playerInfo.id] = playerInfo;
-  });
-
-  /**
-   * Iterates otherPlayers (all players exclusive of 'this' player).
-   * 
-   * If the player that moved = this.player, no action taken since
-   *  this.player not contained within otherPlayers.
-   * 
-   * If the player that moved is in otherPlayers (i.e. the moving player
-   *  is another), update the location of the player respective of the
-   *  current player
-   * 
-   */
-  this.socket.on('playerMoved', (data) => {
-    me.otherPlayers.getChildren().forEach((otherPlayer) => {
-      if (data.id === otherPlayer.id) {
-        otherPlayer.setPosition(data.x, data.y);
-      }
-    });
-  });
-
-  // update sprite colour - for impostor demo + useful for customisation in future
-  this.socket.on('colourUpdate', (data, colour) => {
-    me.otherPlayers.getChildren().forEach((otherPlayer) => {
-      if (data === otherPlayer.id) {
-        otherPlayer.setTint(colour);
-        this.socket.emit('colourUpdated', data, colour);
-      }
-    });
-
-    if (data.id === me.player.id) {
-      me.player.setTint(colour);
-      this.socket.emit('colourUpdated', data, colour);
-    }
-  });
+  configureSocketEvents(me, this.socket);
 
   // TODO move this to chat.js
   // jquery to handle new message & clear chat box
@@ -123,7 +63,8 @@ function create () {
   // adds message to chat
   this.socket.on('newMessage', (msg) => {
     $('#messages').prepend($('<li>').text(msg));
-    window.scrollTo(0, document.body.scrollHeight); // TODO make older messages move off the screen
+    window.scrollTo(0, document.body.scrollHeight); 
+    // TODO make older messages move off the screen
   });
   /* eslint-enable */
   // end todo section
@@ -141,44 +82,6 @@ function create () {
   /* eslint-enable */
   // end todo section
 
-  // remove player sprite when they disconnect
-  this.socket.on('disconnect', (id) => {
-    me.otherPlayers.getChildren().forEach((otherPlayer) => {
-      if (id === otherPlayer.id) {
-        otherPlayer.destroy();
-      }
-    });
-  });
-
-  /**
-   * Different implementation of playerMoved that also 
-   * updates the current player perspective.
-   * 
-   * Useful if some transformation (i.e. portal jump)
-   * happens on the server side.
-   * 
-   * Temporary hack. 
-   */
-  this.socket.on('movement', function(other) {
-    if (me.player.id == other.id) {
-      me.player.setPosition(other.x, other.y);
-    }
-    else {
-      me.otherPlayers.getChildren().forEach((otherPlayer) => {
-        if (other.id === otherPlayer.id) {
-          otherPlayer.setPosition(other.x, other.y);
-        }
-      });
-    }
-  });
-
-  /**
-   * Updates the local state.
-   */
-  this.socket.on('sendState', function(state) {
-    me.localState = state;
-  });
-
   // TODO: bind WASD instead
   // TODO: key to open chat?
   game.keys = this.input.keyboard.addKeys({
@@ -192,18 +95,20 @@ function create () {
 function addPlayer (me, playerInfo) {
   me.player = me.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
   me.player.setTint(playerInfo.colour);
+  me.player.room = playerInfo.room;
 }
 
 function addOtherPlayer (me, playerInfo) {
   const otherPlayer = me.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
   otherPlayer.setTint(playerInfo.colour);
   otherPlayer.id = playerInfo.id;
+  otherPlayer.room = playerInfo.room;
   me.otherPlayers.add(otherPlayer);
 }
 
 /**
- * 
- * @param {} me 
+ *
+ * @param {} me
  */
 function checkCollision (me) {
 
@@ -233,7 +138,7 @@ function update () {
     !nameChanged;
   }
 
-  if (this.player) { 
+  if (this.player) {
     if (game.keys.left.isDown) {
       this.player.setVelocityX(-160);
     } else if (game.keys.right.isDown) {
@@ -266,6 +171,115 @@ function update () {
   }
 }
 
-function configureSocketEvents(){
-  //TODO move all the socket config into here + refer to other functions to tidy up
+function configureSocketEvents (me, socket) {
+  // TODO move all the socket config into here + refer to other functions to tidy up
+  socket.on('drawObjects', (objects) => { drawObjects(me, objects); });
+  socket.on('currentPlayers', (players) => { loadPlayers(me, players); });
+  socket.on('newPlayer', (playerInfo) => { addNewPlayer(me, playerInfo); });
+  socket.on('playerMoved', (data) => { handlePlayerMovement(me, data); });
+  socket.on('colourUpdate', (data, colour) => { updateSpriteColour(me, data, colour); });
+  socket.on('disconnect', (id) => { handleDisconnect(me, id); });
+  socket.on('movement', function(other) { handlePlayerMovementAlternate(me, other); });
+
+  /**
+   * Updates the local state.
+   */
+  socket.on('sendState', function (state) {
+    me.localState = state;
+  });
+}
+
+function drawObjects (me, objects) {
+  Object.keys(objects).forEach(o => {
+    me.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0);
+  });
+}
+
+/* Loads all currently connected players.
+TODO - only load players in current room */
+function loadPlayers (me, players) {
+  allPlayers = players;
+  Object.keys(players).forEach((index) => {
+    if (players[index].id === me.socket.id) {
+      addPlayer(me, players[index]);
+    } else {
+      addOtherPlayer(me, players[index]);
+    }
+  });
+}
+
+/* Add new player to client on connection event.
+TODO - only add when new player is in the same room */
+function addNewPlayer (me, playerInfo) {
+  addOtherPlayer(me, playerInfo);
+  console.log(playerInfo);
+  console.log(allPlayers);
+  allPlayers[playerInfo.id] = playerInfo;
+}
+
+/**
+   * Iterates otherPlayers (all players exclusive of 'this' player).
+   *
+   * If the player that moved = this.player, no action taken since
+   *  this.player not contained within otherPlayers.
+   *
+   * If the player that moved is in otherPlayers (i.e. the moving player
+   *  is another), update the location of the player respective of the
+   *  current player
+   *
+   */
+function handlePlayerMovement (me, data) {
+  me.otherPlayers.getChildren().forEach((otherPlayer) => {
+    if (data.id === otherPlayer.id) {
+      otherPlayer.setPosition(data.x, data.y);
+    }
+  });
+}
+
+/* Updates tint on player sprite.
+Used for impostor demo, will probably be unnecessary in future */
+function updateSpriteColour (me, data, colour) {
+  me.otherPlayers.getChildren().forEach((otherPlayer) => {
+    if (data === otherPlayer.id) {
+      otherPlayer.setTint(colour);
+      this.socket.emit('colourUpdated', data, colour);
+    }
+  });
+
+  if (data.id === me.player.id) {
+    me.player.setTint(colour);
+    this.socket.emit('colourUpdated', data, colour);
+  }
+}
+
+/* Remove player sprite when they disconnect
+TODO only remove from current room (to avoid nullpointers) */
+function handleDisconnect (me, id) {
+  me.otherPlayers.getChildren().forEach((otherPlayer) => {
+    if (id === otherPlayer.id) {
+      otherPlayer.destroy();
+    }
+  });
+}
+
+/**
+   * Different implementation of playerMoved that also
+   * updates the current player perspective.
+   *
+   * Useful if some transformation (i.e. portal jump)
+   * happens on the server side.
+   *
+   * Temporary hack.
+   */
+function handlePlayerMovementAlternate (me, other) {
+  if (me.player.id === other.id) {
+    me.player.setPosition(other.x, other.y);
+  }
+  else {
+    me.otherPlayers.getChildren().forEach((otherPlayer) => {
+      if (other.id === otherPlayer.id) {
+        otherPlayer.setPosition(other.x, other.y);
+      }
+    });
+  }
 }

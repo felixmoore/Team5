@@ -1,16 +1,16 @@
 /**
-* First hack for submission:
+* MVP
 * Uses [Node.js]{@link https://nodejs.org/en/} , [Express.js]{@link https://expressjs.com/} and [Socket.io]{@link https://socket.io/}.
 * Initial setup from [this tutorial]{@link https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/} & https://socket.io/get-started/chat.
 * TODO: add seperate rooms https://socket.io/docs/rooms/#Sample-use-cases
-* @author Felix Moore
+* @author Felix Moore, James Kerr
 */
 
 const { deflateRawSync } = require('zlib');
 
 module.exports.initialiseServer = function (app) {
-  const port = process.env.PORT; // uncomment before push
-  // const port = 3000; // uncomment for local use
+  // const port = process.env.PORT; // uncomment before push
+  const port = 3000; // uncomment for local use
 
   const server = require('http').createServer(app);
   const io = require('socket.io').listen(server);
@@ -21,15 +21,15 @@ module.exports.initialiseServer = function (app) {
 
   io.on('connection', (socket) => { // socket.io detects a connection, output to console.
     console.log('User connected: ID', socket.id);
-
+    socket.join('lobby');
     socket.username = 'Anonymous' + socket.id;
 
-    socket.on('change_username', (data) => { // TODO add a button for this...
+    socket.on('change_username', (data) => {
       socket.username = data.username;
     });
 
     // create new player
-    players[socket.id] = { 
+    players[socket.id] = {
       width: 40,
       height: 40,
       // places new player at random location
@@ -37,8 +37,8 @@ module.exports.initialiseServer = function (app) {
       y: Math.floor(Math.random() * 600),
       id: socket.id,
       // generate random colour, taken from [here]{@link https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
-      // TODO: pick from a list of predefined colours (since this can generate some ugly ones)
-      colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6))
+      colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
+      room: 'lobby'
     };
 
     /**
@@ -63,7 +63,7 @@ module.exports.initialiseServer = function (app) {
       linkedTo: 'button_a'
     };
 
-    /** 
+    /**
      * Draw object layer first.
     */
     socket.emit('drawObjects', gameState.objects);
@@ -87,7 +87,7 @@ module.exports.initialiseServer = function (app) {
       players[data].colour = colour;
     });
 
-    // chat message
+    // New chat message event
     socket.on('newMessage', (msg) => {
       io.emit('newMessage', (socket.username + ': ' + msg));
     });
