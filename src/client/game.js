@@ -3,15 +3,16 @@
 const config = {
   // WebGL if available, Canvas otherwise
   type: Phaser.AUTO,
-  parent: 'game', // renders in a <canvas> element with id game //TODO rename if we have a name
-  width: 800, // TODO change to relative size?
-  height: 600,
-
+  scale: {
+    mode: Phaser.Scale.FIT,
+    parent: 'game', // renders in a <canvas> element with id game
+    width: 800,
+    height: 700
+  },
   physics: { // physics framework from Phaser
     default: 'arcade',
     arcade: {
       debug: false,
-      // velocity: 1,
       gravity: {
         y: 0
       }
@@ -24,11 +25,16 @@ const config = {
   }
 };
 
-var game = new Phaser.Game(config); // eslint-disable-line
+const game = new Phaser.Game(config); // eslint-disable-line
 
 let nameChanged = false;
 let data = {};
 let allPlayers = {};
+
+// window.addEventListener('resize', () => {
+//   game.scale.resize(window.innerWidth / 2, window.innerHeight / 2);
+// }, false
+// );
 
 function setName (newName) {
   data.username = newName;
@@ -39,6 +45,7 @@ function preload () {
   this.load.image('circle', 'public/assets/circle.png');
   this.load.image('button_a', 'public/assets/button_a.png');
   this.load.image('button_b', 'public/assets/button_b.png');
+  this.load.image('DwnStrRoom1', 'public/assets/DwnStrRoom1.png');
 }
 
 function create () {
@@ -46,10 +53,13 @@ function create () {
   this.socket = io(); // eslint-disable-line
   this.otherPlayers = this.physics.add.group();
   this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
+  let bg = this.add.image(0, 0, 'DwnStrRoom1').setOrigin(0).setScale(0.7);
+  let t = this.add.text(0, 0, 'Hello World').setScrollFactor(0); //just some text to demonstrate how to stop things moving with the camera, can be changed to show role
+  this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
 
   configureSocketEvents(me, this.socket);
 
-  // TODO move this to chat.js
+  // TODO move this to chat.js?
   // jquery to handle new message & clear chat box
   /* eslint-disable */
   const socket = this.socket;
@@ -69,7 +79,7 @@ function create () {
   /* eslint-enable */
   // end todo section
 
-  // TODO move this server side
+  // TODO make this save properly server side
   // jquery to handle impostor generation
   /* eslint-disable */
   $('#generateImpostor').click(function(e) { 
@@ -77,7 +87,6 @@ function create () {
     var key = Object.keys(allPlayers);
     let picked = allPlayers[key[ key.length * Math.random() << 0]];
     socket.emit('impostorGenerated', picked.id);
-    console.log('picked' + picked.id);
   });
   /* eslint-enable */
   // end todo section
@@ -96,6 +105,7 @@ function addPlayer (me, playerInfo) {
   me.player = me.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
   me.player.setTint(playerInfo.colour);
   me.player.room = playerInfo.room;
+  me.cameras.main.startFollow(me.player);
 }
 
 function addOtherPlayer (me, playerInfo) {
@@ -107,15 +117,30 @@ function addOtherPlayer (me, playerInfo) {
 }
 
 /**
+ * 
+ * TODO
+ * When a player moves between rooms, the bg variable should be updated with the new room's image.
+ * The player's x & y should be updated to look as though they've just come through the door.
+ * The game should only show players that are currently in the same room.
+ * (This will need to be stored server-side and checked, the socket events will have to be edited a bit to only
+ * send information of players in the same room - to avoid cheating by just grabbing every other player's location)
+ *
+ * @author
+ */
+function changeRoom () {
+
+}
+
+
+/**
  *
  * @param {} me
+ * @author
  */
 function checkCollision (me) {
-
   let locState = me.localState;
 
   for (let ob in locState) {
-    
     // establish bounds of current object
     let current = locState[ob];
     let currentX = current.x;
@@ -127,7 +152,7 @@ function checkCollision (me) {
     if (me.player.x > currentX && me.player.x < currentXX && 
         me.player.y > currentY && me.player.y < currentYY) {
           me.player.x = locState[current.linkedTo].x; // only portals currently, so transform to linked portal
-          me.player.y = locState[current.linkedTo].y; //     
+          me.player.y = locState[current.linkedTo].y; //
     }
   }
 }
@@ -212,8 +237,6 @@ function loadPlayers (me, players) {
 TODO - only add when new player is in the same room */
 function addNewPlayer (me, playerInfo) {
   addOtherPlayer(me, playerInfo);
-  console.log(playerInfo);
-  console.log(allPlayers);
   allPlayers[playerInfo.id] = playerInfo;
 }
 
@@ -239,16 +262,16 @@ function handlePlayerMovement (me, data) {
 /* Updates tint on player sprite.
 Used for impostor demo, will probably be unnecessary in future */
 function updateSpriteColour (me, data, colour) {
-  me.otherPlayers.getChildren().forEach((otherPlayer) => {
-    if (data === otherPlayer.id) {
-      otherPlayer.setTint(colour);
-      this.socket.emit('colourUpdated', data, colour);
-    }
-  });
-
-  if (data.id === me.player.id) {
+  if (data === me.socket.id) {
     me.player.setTint(colour);
-    this.socket.emit('colourUpdated', data, colour);
+    me.socket.emit('colourUpdated', data, colour);
+  } else {
+    me.otherPlayers.getChildren().forEach((otherPlayer) => {
+      if (data === otherPlayer.id) {
+        otherPlayer.setTint(colour);
+        me.socket.emit('colourUpdated', data, colour);
+      }
+    });
   }
 }
 

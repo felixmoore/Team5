@@ -16,8 +16,6 @@ module.exports.initialiseServer = function (app) {
   const io = require('socket.io').listen(server);
   const players = {};
   const gameState = {}; //??
-  const width = 800;
-  const height = 600;
 
   io.on('connection', (socket) => { // socket.io detects a connection, output to console.
     console.log('User connected: ID', socket.id);
@@ -124,5 +122,16 @@ module.exports.initialiseServer = function (app) {
   server.listen(port, () => {
     console.log('Listening on *:' + port);
   });
+
+  /** To be implemented after MVP demo, not 100% necessary for now. */
+  function createRoomCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let code = '';
+    for (let i = 0; i < 5; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  //TODO check if code already exists in rooms list, recursively generate another code
+  return code;
+  }
 
 }
