@@ -45,7 +45,7 @@ function preload () {
   this.load.image('circle', 'public/assets/circle.png');
   this.load.image('button_a', 'public/assets/button_a.png');
   this.load.image('button_b', 'public/assets/button_b.png');
-  this.load.image('DwnStrRoom1', 'public/assets/DwnStrRoom1.png');
+  this.load.image('FullMap', 'public/assets/FullMap.png');
 }
 
 function create () {
@@ -53,12 +53,12 @@ function create () {
   this.socket = io(); // eslint-disable-line
   this.otherPlayers = this.physics.add.group();
   this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
-  let bg = this.add.image(0, 0, 'DwnStrRoom1').setOrigin(0).setScale(0.7);
+  const bg = this.add.image(0, 0, 'FullMap').setOrigin(0).setScale(0.7);
   let t = this.add.text(0, 0, 'Hello World').setScrollFactor(0); //just some text to demonstrate how to stop things moving with the camera, can be changed to show role
   this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
 
   configureSocketEvents(me, this.socket);
-
+  //
   // TODO move this to chat.js?
   // jquery to handle new message & clear chat box
   /* eslint-disable */
@@ -117,7 +117,6 @@ function addOtherPlayer (me, playerInfo) {
 }
 
 /**
- * 
  * TODO
  * When a player moves between rooms, the bg variable should be updated with the new room's image.
  * The player's x & y should be updated to look as though they've just come through the door.
@@ -144,15 +143,15 @@ function checkCollision (me) {
     // establish bounds of current object
     let current = locState[ob];
     let currentX = current.x;
-    let currentXX = currentX + current.width; 
+    let currentXX = currentX + current.width;
     let currentY = current.y;
     let currentYY = currentY + current.height;
 
     // if player is within the bounds of the current object
-    if (me.player.x > currentX && me.player.x < currentXX && 
+    if (me.player.x > currentX && me.player.x < currentXX &&
         me.player.y > currentY && me.player.y < currentYY) {
-          me.player.x = locState[current.linkedTo].x; // only portals currently, so transform to linked portal
-          me.player.y = locState[current.linkedTo].y; //
+      me.player.x = locState[current.linkedTo].x; // only portals currently, so transform to linked portal
+      me.player.y = locState[current.linkedTo].y; //
     }
   }
 }

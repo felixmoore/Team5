@@ -31,8 +31,8 @@ module.exports.initialiseServer = function (app) {
       width: 40,
       height: 40,
       // places new player at random location
-      x: Math.floor(Math.random() * 800),
-      y: Math.floor(Math.random() * 600),
+      x: Math.floor((Math.random() * 1245) + 56),
+      y: Math.floor((Math.random() * 1820) + 1216),
       id: socket.id,
       // generate random colour, taken from [here]{@link https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
       colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
