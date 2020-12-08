@@ -9,8 +9,8 @@
 const { deflateRawSync } = require('zlib');
 
 module.exports.initialiseServer = function (app) {
-  // const port = process.env.PORT; // uncomment before push
-  const port = 3000; // uncomment for local use
+  const port = process.env.PORT; // uncomment before push
+  // const port = 3000; // uncomment for local use
 
   const server = require('http').createServer(app);
   const io = require('socket.io').listen(server);
@@ -85,8 +85,7 @@ module.exports.initialiseServer = function (app) {
     });
 
     socket.on('gameStarted', () => {
-      generateClues(gameState);
-     
+      generateClues(gameState)
       io.emit('drawObjects', gameState.objects);
       console.log('clues sent');
     });
