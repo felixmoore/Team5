@@ -1,5 +1,9 @@
 /* global Phaser */
 
+/**
+ * Clue glow effect code from https://stackoverflow.com/a/52939167
+ */
+
 const config = {
   // WebGL if available, Canvas otherwise
   type: Phaser.AUTO,
@@ -29,13 +33,10 @@ const game = new Phaser.Game(config); // eslint-disable-line
 
 let nameChanged = false;
 let data = {};
+let objects = {}
 let allPlayers = {};
-
-// window.addEventListener('resize', () => {
-//   game.scale.resize(window.innerWidth / 2, window.innerHeight / 2);
-// }, false
-// );
-
+let time = 0.0;
+let cluesCollected = 0; 
 function setName (newName) {
   data.username = newName;
   nameChanged = true;
@@ -46,18 +47,47 @@ function preload () {
   this.load.image('button_a', 'public/assets/button_a.png');
   this.load.image('button_b', 'public/assets/button_b.png');
   this.load.image('FullMap', 'public/assets/FullMap.png');
+  this.load.image('clue_bone', 'public/assets/clues/bone01a.png');
+  this.load.image('clue_book', 'public/assets/clues/book_01g.png');
+  this.load.image('clue_knife', 'public/assets/clues/sword_03c.png');
+  this.load.image('clue_poison', 'public/assets/clues/potion_01a.png');
 }
 
 function create () {
-  const me = this; // avoids confusion with 'this' object when scope changes
+  const self = this; // avoids confusion with 'this' object when scope changes
   this.socket = io(); // eslint-disable-line
   this.otherPlayers = this.physics.add.group();
   this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
   const bg = this.add.image(0, 0, 'FullMap').setOrigin(0).setScale(0.7);
-  let t = this.add.text(0, 0, 'Hello World').setScrollFactor(0); //just some text to demonstrate how to stop things moving with the camera, can be changed to show role
+  const infoBg = this.add.rectangle(0, 0, bg.displayWidth, 40, 0x6666ff).setScrollFactor(0);
+  let t = this.add.text(0, 0, 'Hello World').setScrollFactor(0); // just some text to demonstrate how to stop things moving with the camera, can be changed to show role
+  
   this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
+  
+  // glow effect
+  customPipeline = game.renderer.addPipeline('Custom', new CustomPipeline(game));
+  customPipeline.setFloat1('alpha', 1.0);
+ 
 
-  configureSocketEvents(me, this.socket);
+  // let Clue = new Phaser.Class({
+  //   Extends: Phaser.GameObjects.Image,
+
+  //   initialize:
+  //   function Clue (scene, x, y) {
+  //     Phaser.GameObjects.Image.call(this, scene);
+  //     this.setPosition(800, 1300);
+  //     this.setPipeline('Custom');
+  //     this.setOrigin(0);
+
+  //     this.total = 0;
+  //     scene.children.add(this);
+  //   }
+  // });
+
+  // let tempClue = new Clue(this, 800, 1300);
+  // tempClue.setTexture('clue_book');
+
+  configureSocketEvents(self, this.socket);
   //
   // TODO move this to chat.js?
   // jquery to handle new message & clear chat box
@@ -82,8 +112,9 @@ function create () {
   // TODO make this save properly server side
   // jquery to handle impostor generation
   /* eslint-disable */
-  $('#generateImpostor').click(function(e) { 
+  $('#startGame').click(function(e) { 
     e.preventDefault();
+    socket.emit('gameStarted');
     var key = Object.keys(allPlayers);
     let picked = allPlayers[key[ key.length * Math.random() << 0]];
     socket.emit('impostorGenerated', picked.id);
@@ -101,19 +132,19 @@ function create () {
   });
 }
 
-function addPlayer (me, playerInfo) {
-  me.player = me.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
-  me.player.setTint(playerInfo.colour);
-  me.player.room = playerInfo.room;
-  me.cameras.main.startFollow(me.player);
+function addPlayer (self, playerInfo) {
+  self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
+  self.player.setTint(playerInfo.colour);
+  self.player.room = playerInfo.room;
+  self.cameras.main.startFollow(self.player);
 }
 
-function addOtherPlayer (me, playerInfo) {
-  const otherPlayer = me.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
+function addOtherPlayer (self, playerInfo) {
+  const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
   otherPlayer.setTint(playerInfo.colour);
   otherPlayer.id = playerInfo.id;
   otherPlayer.room = playerInfo.room;
-  me.otherPlayers.add(otherPlayer);
+  self.otherPlayers.add(otherPlayer);
 }
 
 /**
@@ -126,18 +157,17 @@ function addOtherPlayer (me, playerInfo) {
  *
  * @author
  */
-function changeRoom () {
+// function changeRoom () {
 
-}
-
+// }
 
 /**
  *
- * @param {} me
+ * @param {} self
  * @author
  */
-function checkCollision (me) {
-  let locState = me.localState;
+function checkCollision (self) {
+  let locState = self.localState;
 
   for (let ob in locState) {
     // establish bounds of current object
@@ -148,15 +178,19 @@ function checkCollision (me) {
     let currentYY = currentY + current.height;
 
     // if player is within the bounds of the current object
-    if (me.player.x > currentX && me.player.x < currentXX &&
-        me.player.y > currentY && me.player.y < currentYY) {
-      me.player.x = locState[current.linkedTo].x; // only portals currently, so transform to linked portal
-      me.player.y = locState[current.linkedTo].y; //
+    if (self.player.x > currentX && self.player.x < currentXX &&
+        self.player.y > currentY && self.player.y < currentYY) {
+      if (current.linkedTo != null) { // teleport if object is a portal
+        self.player.x = locState[current.linkedTo].x; // only portals currently, so transform to linked portal
+        self.player.y = locState[current.linkedTo].y; //
+      }
     }
   }
 }
 
 function update () {
+  customPipeline.setFloat1('time', time);
+  time += 0.03;
   if (nameChanged) {
     this.socket.emit('change_username', data);
     !nameChanged;
@@ -195,47 +229,68 @@ function update () {
   }
 }
 
-function configureSocketEvents (me, socket) {
+function configureSocketEvents (self, socket) {
   // TODO move all the socket config into here + refer to other functions to tidy up
-  socket.on('drawObjects', (objects) => { drawObjects(me, objects); });
-  socket.on('currentPlayers', (players) => { loadPlayers(me, players); });
-  socket.on('newPlayer', (playerInfo) => { addNewPlayer(me, playerInfo); });
-  socket.on('playerMoved', (data) => { handlePlayerMovement(me, data); });
-  socket.on('colourUpdate', (data, colour) => { updateSpriteColour(me, data, colour); });
-  socket.on('disconnect', (id) => { handleDisconnect(me, id); });
-  socket.on('movement', function(other) { handlePlayerMovementAlternate(me, other); });
+  socket.on('drawObjects', (objects) => { drawObjects(self, objects); });
+  socket.on('currentPlayers', (players) => { loadPlayers(self, players); });
+  socket.on('newPlayer', (playerInfo) => { addNewPlayer(self, playerInfo); });
+  socket.on('playerMoved', (data) => { handlePlayerMovement(self, data); });
+  socket.on('colourUpdate', (data, colour) => { updateSpriteColour(self, data, colour); });
+  socket.on('disconnect', (id) => { handleDisconnect(self, id); });
+  socket.on('movement', (other) => { handlePlayerMovementAlternate(self, other); });
+  //socket.on('updateClues', (clue) => { handleClueUpdate(self, clue); });
+  // socket.on('clueLocations', (clues) => { drawClues(); });
+  // socket.on('gameStarted', () => { drawClues(); });
 
   /**
    * Updates the local state.
    */
   socket.on('sendState', function (state) {
-    me.localState = state;
+    self.localState = state;
   });
 }
 
-function drawObjects (me, objects) {
+function drawObjects (self, objects) {
+  let clueText = self.add.text(615, 0, 'Clues collected:  ').setScrollFactor(0);
   Object.keys(objects).forEach(o => {
-    me.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0);
+    const obj = self.physics.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0).setPipeline('Custom');
+    console.log('got here');
+    if (objects[o].linkedTo === undefined) {
+      self.physics.add.overlap(self.player, obj, () => {
+        self.socket.emit('clueCollected');
+        obj.destroy();
+        cluesCollected++;
+       
+        clueText.setText('Clues collected: ' + cluesCollected);
+      }, null, self);
+      self.physics.add.overlap(self.otherPlayers, obj, () => {
+        self.socket.emit('clueCollected');
+        obj.destroy();
+        cluesCollected++;
+        //let clueText = self.add.text(615, 0, 'Clues collected: ' + cluesCollected).setScrollFactor(0);
+        clueText.setText('Clues collected: ' + cluesCollected);
+      }, null, self);
+    }
   });
 }
 
 /* Loads all currently connected players.
 TODO - only load players in current room */
-function loadPlayers (me, players) {
+function loadPlayers (self, players) {
   allPlayers = players;
   Object.keys(players).forEach((index) => {
-    if (players[index].id === me.socket.id) {
-      addPlayer(me, players[index]);
+    if (players[index].id === self.socket.id) {
+      addPlayer(self, players[index]);
     } else {
-      addOtherPlayer(me, players[index]);
+      addOtherPlayer(self, players[index]);
     }
   });
 }
 
 /* Add new player to client on connection event.
 TODO - only add when new player is in the same room */
-function addNewPlayer (me, playerInfo) {
-  addOtherPlayer(me, playerInfo);
+function addNewPlayer (self, playerInfo) {
+  addOtherPlayer(self, playerInfo);
   allPlayers[playerInfo.id] = playerInfo;
 }
 
@@ -250,8 +305,8 @@ function addNewPlayer (me, playerInfo) {
    *  current player
    *
    */
-function handlePlayerMovement (me, data) {
-  me.otherPlayers.getChildren().forEach((otherPlayer) => {
+function handlePlayerMovement (self, data) {
+  self.otherPlayers.getChildren().forEach((otherPlayer) => {
     if (data.id === otherPlayer.id) {
       otherPlayer.setPosition(data.x, data.y);
     }
@@ -260,15 +315,15 @@ function handlePlayerMovement (me, data) {
 
 /* Updates tint on player sprite.
 Used for impostor demo, will probably be unnecessary in future */
-function updateSpriteColour (me, data, colour) {
-  if (data === me.socket.id) {
-    me.player.setTint(colour);
-    me.socket.emit('colourUpdated', data, colour);
+function updateSpriteColour (self, data, colour) {
+  if (data === self.socket.id) {
+    self.player.setTint(colour);
+    self.socket.emit('colourUpdated', data, colour);
   } else {
-    me.otherPlayers.getChildren().forEach((otherPlayer) => {
+    self.otherPlayers.getChildren().forEach((otherPlayer) => {
       if (data === otherPlayer.id) {
         otherPlayer.setTint(colour);
-        me.socket.emit('colourUpdated', data, colour);
+        self.socket.emit('colourUpdated', data, colour);
       }
     });
   }
@@ -276,8 +331,8 @@ function updateSpriteColour (me, data, colour) {
 
 /* Remove player sprite when they disconnect
 TODO only remove from current room (to avoid nullpointers) */
-function handleDisconnect (me, id) {
-  me.otherPlayers.getChildren().forEach((otherPlayer) => {
+function handleDisconnect (self, id) {
+  self.otherPlayers.getChildren().forEach((otherPlayer) => {
     if (id === otherPlayer.id) {
       otherPlayer.destroy();
     }
@@ -293,15 +348,57 @@ function handleDisconnect (me, id) {
    *
    * Temporary hack.
    */
-function handlePlayerMovementAlternate (me, other) {
-  if (me.player.id === other.id) {
-    me.player.setPosition(other.x, other.y);
-  }
-  else {
-    me.otherPlayers.getChildren().forEach((otherPlayer) => {
+function handlePlayerMovementAlternate (self, other) {
+  if (self.player.id === other.id) {
+    self.player.setPosition(other.x, other.y);
+  } else {
+    self.otherPlayers.getChildren().forEach((otherPlayer) => {
       if (other.id === otherPlayer.id) {
         otherPlayer.setPosition(other.x, other.y);
       }
     });
   }
 }
+
+// function handleClueUpdate (self, clue) {
+  
+//   //drawObjects(self, objects);
+//   clue.destroy();
+// }
+
+// used to make the clue sprites flash, needs to be moved to another file after MVP
+const CustomPipeline = new Phaser.Class({
+  Extends: Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
+  initialize:
+  function CustomPipeline (game) {
+    Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline.call(this, {
+      game: game,
+      renderer: game.renderer,
+      fragShader: [
+        'precision lowp float;',
+        'varying vec2 outTexCoord;',
+        'varying vec4 outTint;',
+        'uniform sampler2D uMainSampler;',
+        'uniform float alpha;',
+        'uniform float time;',
+        'void main() {',
+        'vec4 sum = vec4(0);',
+        'vec2 texcoord = outTexCoord;',
+        'for(int xx = -4; xx <= 4; xx++) {',
+        'for(int yy = -4; yy <= 4; yy++) {',
+        'float dist = sqrt(float(xx*xx) + float(yy*yy));',
+        'float factor = 0.0;',
+        'if (dist == 0.0) {',
+        'factor = 2.0;',
+        '} else {',
+        'factor = 2.0/abs(float(dist));',
+        '}',
+        'sum += texture2D(uMainSampler, texcoord + vec2(xx, yy) * 0.002) * (abs(sin(time))+0.06);',
+        '}',
+        '}',
+        'gl_FragColor = sum * 0.025 + texture2D(uMainSampler, texcoord)*alpha;',
+        '}'
+      ].join('\n')
+    });
+  }
+});

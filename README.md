@@ -24,3 +24,5 @@ Go to https://deception-game.herokuapp.com/!
 - in your browser, open up http://localhost:3000/ in a couple of different tabs.
 - any movement should be reflected in the other tabs.
 
+Clue images:
+https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack
