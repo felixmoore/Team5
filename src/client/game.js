@@ -61,31 +61,10 @@ function create () {
   const bg = this.add.image(0, 0, 'FullMap').setOrigin(0).setScale(0.7);
   const infoBg = this.add.rectangle(0, 0, bg.displayWidth, 40, 0x6666ff).setScrollFactor(0);
   let t = this.add.text(0, 0, 'Hello World').setScrollFactor(0); // just some text to demonstrate how to stop things moving with the camera, can be changed to show role
-  
   this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
-  
   // glow effect
   customPipeline = game.renderer.addPipeline('Custom', new CustomPipeline(game));
   customPipeline.setFloat1('alpha', 1.0);
- 
-
-  // let Clue = new Phaser.Class({
-  //   Extends: Phaser.GameObjects.Image,
-
-  //   initialize:
-  //   function Clue (scene, x, y) {
-  //     Phaser.GameObjects.Image.call(this, scene);
-  //     this.setPosition(800, 1300);
-  //     this.setPipeline('Custom');
-  //     this.setOrigin(0);
-
-  //     this.total = 0;
-  //     scene.children.add(this);
-  //   }
-  // });
-
-  // let tempClue = new Clue(this, 800, 1300);
-  // tempClue.setTexture('clue_book');
 
   configureSocketEvents(self, this.socket);
   //
@@ -238,10 +217,6 @@ function configureSocketEvents (self, socket) {
   socket.on('colourUpdate', (data, colour) => { updateSpriteColour(self, data, colour); });
   socket.on('disconnect', (id) => { handleDisconnect(self, id); });
   socket.on('movement', (other) => { handlePlayerMovementAlternate(self, other); });
-  //socket.on('updateClues', (clue) => { handleClueUpdate(self, clue); });
-  // socket.on('clueLocations', (clues) => { drawClues(); });
-  // socket.on('gameStarted', () => { drawClues(); });
-
   /**
    * Updates the local state.
    */
@@ -251,7 +226,7 @@ function configureSocketEvents (self, socket) {
 }
 
 function drawObjects (self, objects) {
-  let clueText = self.add.text(615, 0, 'Clues collected:  ').setScrollFactor(0);
+  const clueText = self.add.text(615, 0, 'Clues collected:  ').setScrollFactor(0);
   Object.keys(objects).forEach(o => {
     const obj = self.physics.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0).setPipeline('Custom');
     console.log('got here');
@@ -260,14 +235,12 @@ function drawObjects (self, objects) {
         self.socket.emit('clueCollected');
         obj.destroy();
         cluesCollected++;
-       
         clueText.setText('Clues collected: ' + cluesCollected);
       }, null, self);
       self.physics.add.overlap(self.otherPlayers, obj, () => {
         self.socket.emit('clueCollected');
         obj.destroy();
         cluesCollected++;
-        //let clueText = self.add.text(615, 0, 'Clues collected: ' + cluesCollected).setScrollFactor(0);
         clueText.setText('Clues collected: ' + cluesCollected);
       }, null, self);
     }
@@ -361,7 +334,6 @@ function handlePlayerMovementAlternate (self, other) {
 }
 
 // function handleClueUpdate (self, clue) {
-  
 //   //drawObjects(self, objects);
 //   clue.destroy();
 // }
