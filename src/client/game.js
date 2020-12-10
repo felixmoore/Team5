@@ -33,10 +33,10 @@ const game = new Phaser.Game(config); // eslint-disable-line
 
 let nameChanged = false;
 let data = {};
-let objects = {}
+let objects = {};
 let allPlayers = {};
 let time = 0.0;
-let cluesCollected = 0; 
+let cluesCollected = 0;
 function setName (newName) {
   data.username = newName;
   nameChanged = true;
@@ -44,6 +44,7 @@ function setName (newName) {
 
 function preload () {
   this.load.image('circle', 'public/assets/circle.png');
+  this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', { frameWidth: 32, frameHeight: 32 }); //just to test anims, from https://pipoya.itch.io/pipoya-free-rpg-character-sprites-nekonin
   this.load.image('button_a', 'public/assets/button_a.png');
   this.load.image('button_b', 'public/assets/button_b.png');
   this.load.image('FullMap', 'public/assets/FullMap.png');
@@ -60,7 +61,7 @@ function create () {
   this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
   const bg = this.add.image(0, 0, 'FullMap').setOrigin(0).setScale(0.7);
   const infoBg = this.add.rectangle(0, 0, bg.displayWidth, 40, 0x6666ff).setScrollFactor(0);
-  let t = this.add.text(0, 0, 'Hello World').setScrollFactor(0); // just some text to demonstrate how to stop things moving with the camera, can be changed to show role
+  let t = this.add.text(0, 0, 'Player role: ').setScrollFactor(0); // just some text to demonstrate how to stop things moving with the camera, can be changed to show role
   this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
   // glow effect
   customPipeline = game.renderer.addPipeline('Custom', new CustomPipeline(game));
@@ -111,8 +112,65 @@ function create () {
   });
 }
 
+function createAnims(self, key) {
+  self.anims.create({
+    key: 'down',
+    frames: self.anims.generateFrameNumbers('cat', { start: 0, end: 2 }),
+    frameRate: 5,
+    repeat: -1
+  });
+
+  self.anims.create({
+    key: 'stopDown',
+    frames: [{ key: 'cat', frame: 1 }],
+    frameRate: 20
+  });
+
+  self.anims.create({
+    key: 'left',
+    frames: self.anims.generateFrameNumbers('cat', { start: 3, end: 5 }),
+    frameRate: 5,
+    repeat: -1
+  });
+
+  self.anims.create({
+    key: 'stopLeft',
+    frames: [{ key: 'cat', frame: 4 }],
+    frameRate: 20
+  });
+
+  self.anims.create({
+    key: 'right',
+    frames: self.anims.generateFrameNumbers('cat', { start: 6, end: 8 }),
+    frameRate: 5,
+    repeat: -1
+  });
+
+  self.anims.create({
+    key: 'stopRight',
+    frames: [{ key: 'cat', frame: 7 }],
+    frameRate: 20
+  });
+
+  self.anims.create({
+    key: 'up',
+    frames: self.anims.generateFrameNumbers('cat', { start: 9, end: 11 }),
+    frameRate: 5,
+    repeat: -1
+  });
+
+  self.anims.create({
+    key: 'stopUp',
+    frames: [{ key: 'cat', frame: 10 }],
+    frameRate: 20
+  });
+}
+
 function addPlayer (self, playerInfo) {
-  self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
+  //self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
+  self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'cat').setScale(3).setOrigin(0, 0);
+  createAnims(self, 'cat');
+  self.player.anims.play('stopDown', true);
   self.player.setTint(playerInfo.colour);
   self.player.room = playerInfo.room;
   self.cameras.main.startFollow(self.player);
@@ -146,15 +204,15 @@ function addOtherPlayer (self, playerInfo) {
  * @author
  */
 function checkCollision (self) {
-  let locState = self.localState;
+  const locState = self.localState;
 
-  for (let ob in locState) {
+  for (const ob in locState) {
     // establish bounds of current object
-    let current = locState[ob];
-    let currentX = current.x;
-    let currentXX = currentX + current.width;
-    let currentY = current.y;
-    let currentYY = currentY + current.height;
+    const current = locState[ob];
+    const currentX = current.x;
+    const currentXX = currentX + current.width;
+    const currentY = current.y;
+    const currentYY = currentY + current.height;
 
     // if player is within the bounds of the current object
     if (self.player.x > currentX && self.player.x < currentXX &&
@@ -178,16 +236,31 @@ function update () {
   if (this.player) {
     if (game.keys.left.isDown) {
       this.player.setVelocityX(-160);
+      this.player.anims.play('left', true);
     } else if (game.keys.right.isDown) {
       this.player.setVelocityX(160);
+      this.player.anims.play('right', true);
     } else {
+      // this won't handle diagonals, idk if we want it to
+      if (this.player.body.velocity.x === -160) {
+        this.player.anims.play('stopLeft', true);
+      } else if (this.player.body.velocity.x === 160) {
+        this.player.anims.play('stopRight', true);
+      }
       this.player.setVelocityX(0); // stop moving
     }
     if (game.keys.up.isDown) {
       this.player.setVelocityY(-160);
+      this.player.anims.play('up', true);
     } else if (game.keys.down.isDown) {
       this.player.setVelocityY(160);
+      this.player.anims.play('down', true);
     } else {
+      if (this.player.body.velocity.y === -160) {
+        this.player.anims.play('stopUp', true);
+      } else if (this.player.body.velocity.y === 160) {
+        this.player.anims.play('stopDown', true);
+      }
       this.player.setVelocityY(0);
     }
 
@@ -229,7 +302,6 @@ function drawObjects (self, objects) {
   const clueText = self.add.text(615, 0, 'Clues collected:  ').setScrollFactor(0);
   Object.keys(objects).forEach(o => {
     const obj = self.physics.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0).setPipeline('Custom');
-    console.log('got here');
     if (objects[o].linkedTo === undefined) {
       self.physics.add.overlap(self.player, obj, () => {
         self.socket.emit('clueCollected');
@@ -333,12 +405,7 @@ function handlePlayerMovementAlternate (self, other) {
   }
 }
 
-// function handleClueUpdate (self, clue) {
-//   //drawObjects(self, objects);
-//   clue.destroy();
-// }
-
-// used to make the clue sprites flash, needs to be moved to another file after MVP
+// Custom texture pipeline used to make the clue sprites flash, needs to be moved to another file after MVP
 const CustomPipeline = new Phaser.Class({
   Extends: Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
   initialize:
