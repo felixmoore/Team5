@@ -35,7 +35,7 @@ let nameChanged = false;
 let data = {};
 let objects = {};
 let allPlayers = {};
-let time = 0.0;
+let time = 0;
 let cluesCollected = 0;
 function setName (newName) {
   data.username = newName;
@@ -52,6 +52,8 @@ function preload () {
   this.load.image('clue_book', 'public/assets/clues/book_01g.png');
   this.load.image('clue_knife', 'public/assets/clues/sword_03c.png');
   this.load.image('clue_poison', 'public/assets/clues/potion_01a.png');
+  this.load.image('timebar', 'public/assets/timebar.png');
+  this.load.image('timecontainer', 'public/assets/timecontainer.png');
 
   //loads minigame js files for when events are called
   //game.state.add('wordsearch', 'src/client/minigames/wordsearch.js');
@@ -116,8 +118,15 @@ function create () {
 
   clues = this.physics.add.group(); // group for all clue objects
   clues.create(400,568, 'clue_bone'); //creates an instance of the bone clue and places it at location
-  
-  
+
+  //self.initialTime = 6000;
+  //self.remainingTime = initialTime; 
+
+  //this.add.image(0,50, 'timeContainer');
+  //this.add.image(self.timeContainer.x +46, self.timeContainer.y, 'timeBar');
+
+  //self.createTimer();
+  //self.gameTimer = game.time.events.loop(100, function(){self.updateTimer();})
 }
 
 function createAnims(self, key) {
@@ -425,13 +434,32 @@ function handlePlayerMovementAlternate (self, other) {
 
 //method for when player overlaps with clue
 function collectClue(){
-  var me = this;
+  const self = this;
   clue.disableBody(true, true); //removes clue from map if overlap with player is detected
-  me.cluesCollected += 1; // increments clue collected value by 1
-  me.clueLabel.text = me.cluesCollected //passes cluesCollected value to on screen score label TODO: clueLabel method
+  self.cluesCollected += 1; // increments clue collected value by 1
+  self.clueLabel.text = self.cluesCollected //passes cluesCollected value to on screen score label TODO: clueLabel method
   //opens wordsearch minigame
-  me.game.state.load('wordsearch', 'src/client/minigames/wordsearch.js')
+  self.game.state.load('wordsearch', 'src/client/minigames/wordsearch.js')
 }
+
+/* function createTimer(){
+  const self = this;
+
+  
+
+  self.timeBar = self.game.add.sprite(self.timeBar.x, self.timeBar.y, 'timeBar');
+  self.timeBar.cropEnabled = true;
+
+}
+
+function updateTimer(){
+  const self = this;
+
+  self.remainingTime -=10;
+
+  var cropTimeBar = new Phaser.timeBar(self.timeBar.x, self.timeBar.y,(self.remainingTime/self.initialTime)* self.timeBar.width, self.timeBar.height);
+  self.timeBar.crop(cropTimeBar);
+} */
 
 // Custom texture pipeline used to make the clue sprites flash, needs to be moved to another file after MVP
 const CustomPipeline = new Phaser.Class({
