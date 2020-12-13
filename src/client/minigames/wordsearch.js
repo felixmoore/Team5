@@ -106,6 +106,8 @@ var Preload = function(game){};
         })
 
         //code for multiplayer functionality
+        this.socket =io();
+        this.localState ={};
     }
 
 
@@ -278,7 +280,7 @@ var Preload = function(game){};
     }
 
     function createTimer(){
-
+        
         var me = this;
 
         me.timeBar = me.game.add.bitmapData(me.game.width, 50); //basic graphical timing bar
