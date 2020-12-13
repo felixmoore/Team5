@@ -11,7 +11,12 @@
     crossorigin="anonymous"></script><!--referencing Phaser framework-->
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script> <!--referencing jQuery-->
 
-
+    <style>
+      .a{
+        border-radius: 28px;
+    padding: 8px;
+    background: black;
+      }
 
   </head>
   <body>
@@ -22,7 +27,7 @@
         <script src="/public/js/game.js"></script>
         <div id="wrapper">
           <div class="container">
-            <div class="container-box" id="game"></div>
+            <div class="container-box a" id="game"></div>
             <div class="container-box" id="chatBox">
               <div class="container" id="nameInputBox">
                   <input id="nameInput" type="text" placeholder="Set your name here" autocomplete="off"/>
