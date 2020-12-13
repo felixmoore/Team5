@@ -1,23 +1,15 @@
-<!doctype html>
-<html lang="en">
-    <head>
-      <meta charset="UTF-8"/>
-      <title>Anagram game</title>
-      <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
-    <style type="text/css">
-        body {
-            margin: 0;
-        }
-    </style>
-    </head>
-    <body>
+/** Wordsearch minigame, still need to implement game.state.add event in main game and multiplayer aspect
+ * 
+ */
 
-    <script type="text/javascript">
-
-var config = {
+const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        parent: 'game',
+        width: 800,
+        height: 700,
+    },
     physics: {
         default: 'arcade' ,
         arcade: {
@@ -40,21 +32,13 @@ var Preload = function(game){};
 
 
     function preload(){
-        this.game.load.text('dictionary', 'assets/wordlist.txt'); //grabs wordlist from assets
+        this.game.load.text('dictionary', 'public/assets/minigame_assets/wordlist.txt'); //grabs wordlist from assets
 
     }
 
     
     function create(){
         // this.game.state.start("Main"); //loads game into mainstate without going into title
-
-       /* var word = 'test' //variable for comparing words
-
-        if(me.game.cache.getText('dictionary').indexOf(' ' + word + ' ')> -1){ //checks if word is in dictionary
-            alert("exists"); //if a string matching is found, alert showing it exists
-        } else {
-            alert("does not exist"); // if no matching string is found, alerts does not exist
-        } */
 
         var me = this;
 
@@ -97,7 +81,6 @@ var Preload = function(game){};
 
         me.initTiles(); //initialises tiles
 
-        
         me.guessing = false; //detects when user is guessing, off by default
             me.currentWord = []; //stores current word info
             me.correctWords = []; //stores correct words info
@@ -110,6 +93,19 @@ var Preload = function(game){};
         me.score = 0;
         me.scoreBuffer = 0;
         me.createScore();
+
+        //keeps track of time
+        me.remainingTime = 6000;
+        me.fullTime = 6000;
+
+        //runs a loop every 100ms calling createTimer method to decrement remainingTime
+        me.createTimer();
+        me.gameTimer = game.time.events.loop(100, function(){
+            me.updateTimer();
+
+        })
+
+        //code for multiplayer functionality
     }
 
 
@@ -188,6 +184,11 @@ var Preload = function(game){};
         if(me.scoreBuffer > 0){
             me.incrementScore();
             me.scoreBuffer--; //decreases score buffer by one and increases score when called
+        }
+
+        //when timer ends, loads the main game back up, TODO implement end of minigame screen and voting
+        if(me.remainingTime < 1){
+            me.game.state.load('game', 'src/client/game.js' );
         }
     }
 
@@ -276,7 +277,30 @@ var Preload = function(game){};
         "0", {font: scoreFont, fill: "#ffffff", stroke:"#535353", strokeThickness: 15});
     }
 
-</script>
-    </body>
-</html>
+    function createTimer(){
+
+        var me = this;
+
+        me.timeBar = me.game.add.bitmapData(me.game.width, 50); //basic graphical timing bar
+        
+        //renders bg color and style
+        me.timeBar.ctx.rect(0, 0, me.game.width, 50);
+        me.timeBar.ctx.fillStyle = '#ffffff';
+        me.timeBar.ctx.fill();
+        me.timeBar = me.game.add.sprite(0, 0, me.timeBar);
+        me.timeBar.cropEnabled = true;
+    }
+
+    function updateTimer(){
+
+        var me = this;
+        me.remainingTime -= 10; //decrements remaining time by 10 when called
+
+        //updates timing bar graphic
+        var cropRect = new Phaser.Rectangle(0,0, (me.remainingTime/ me.fullTime)* me.game.width, me.timeBar.height);
+        me.timeBar.crop(cropRect);
+
+    }
+
+
 

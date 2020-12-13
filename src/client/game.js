@@ -52,6 +52,9 @@ function preload () {
   this.load.image('clue_book', 'public/assets/clues/book_01g.png');
   this.load.image('clue_knife', 'public/assets/clues/sword_03c.png');
   this.load.image('clue_poison', 'public/assets/clues/potion_01a.png');
+
+  //loads minigame js files for when events are called
+  game.state.add('wordsearch', 'src/client/minigames/wordsearch.js');
 }
 
 function create () {
@@ -110,6 +113,12 @@ function create () {
     left: 'left',
     right: 'right'
   });
+
+  clues = this.physics.add.staticGroup(); // group for all clue objects
+  clues.create(400,568, 'clue_bone'); //creates an instance of the bone clue and places it at location
+  
+  //detects if player overlaps with clue and passes the event to collectClue function
+  this.physics.add.overlap(player, clues, collectClue, null, this);
 }
 
 function createAnims(self, key) {
@@ -164,6 +173,8 @@ function createAnims(self, key) {
     frames: [{ key: 'cat', frame: 10 }],
     frameRate: 20
   });
+
+ 
 }
 
 function addPlayer (self, playerInfo) {
@@ -403,6 +414,16 @@ function handlePlayerMovementAlternate (self, other) {
       }
     });
   }
+}
+
+//method for when player overlaps with clue
+function collectClue(){
+  var me = this;
+  clue.disableBody(true, true); //removes clue from map if overlap with player is detected
+  me.cluesCollected += 1; // increments clue collected value by 1
+  me.clueLabel.text = me.cluesCollected //passes cluesCollected value to on screen score label TODO: clueLabel method
+  //opens wordsearch minigame
+  me.game.state.load('wordsearch', 'src/client/minigames/wordsearch.js')
 }
 
 // Custom texture pipeline used to make the clue sprites flash, needs to be moved to another file after MVP
