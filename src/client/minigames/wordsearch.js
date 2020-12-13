@@ -1,5 +1,5 @@
 /** Wordsearch minigame, still need to implement game.state.add event in main game and multiplayer aspect
- * 
+ * Taken from https://www.joshmorony.com/part-2-building-a-word-search-game-in-html5-with-phaser/
  */
 
 const config = {
