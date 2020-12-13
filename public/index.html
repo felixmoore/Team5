@@ -16,10 +16,10 @@
 
   </head>
   <body>
-
+      <header>
         <h1> Deception </h1>
-        <h2> Minimum Viable Product </h2>
-        <button id="startGame" type="button"> Start </button>
+        <h2> Pre-alpha release - Minimum Viable Product </h2>
+      </header>
         <script src="../../src/client/game.js"></script>
         <div id="wrapper">
           <div class="container">
@@ -27,7 +27,8 @@
             <div class="container-box" id="chatBox">
               <div class="container" id="nameInputBox">
                   <input id="nameInput" type="text" placeholder="Set your name here" autocomplete="off"/>
-                  <button type="button" onclick="setName(document.getElementById('nameInput').value)"> Set </button>
+                  <button type="button" onclick="setName(document.getElementById('nameInput').value)"> Set username </button>
+                  <button id="startGame" type="button"> Start game </button>
               </div>
               <form id="chat" action="">
                 <div class="container">
@@ -41,6 +42,9 @@
 
         </div>
 
-
+        <footer>
+          <p>Copyright © Team 5, 2020</p>
+          <p><a href="https://deception.wildlyfe.net/">Information</a></p>
+        </footer>
   </body>
 </html>

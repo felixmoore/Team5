@@ -1,10 +1,17 @@
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
   font-family:'Roboto';
 }
+
+header {
+  padding: 5px;
+  text-align: center;
+  background: #000000;
+  color: white;
+  font-size: 25px;
+}
+
 
 #wrapper {
   width: 90%;
@@ -24,7 +31,7 @@ form input {
 }
 
 form input[type="submit"] {
-  width: 9%;
+  width: 15%;
   background: rgb(130, 224, 255);
   border: none;
   padding: 10px;
@@ -33,7 +40,7 @@ form input[type="submit"] {
 form input[type="text"] {
   border: 1px solid black;
   padding: 10px;
-  width: 90%;
+  width: 85%;
   background: white;
 }
 
@@ -60,9 +67,15 @@ form input[type="text"] {
 
 #nameInputBox button {
   padding: 5px;
-  width: 10%;
+  width: auto;
   margin-top: 1%;
   margin-bottom: 1%;
+}
+
+#nameInputBox #startGame {
+  margin-left:auto;  
+  margin-right:5px;
+  padding: 5px;
 }
 
 #nameInputBox input {
@@ -73,3 +86,11 @@ form input[type="text"] {
 
 #messages li { padding: 5px 10px; }
 #messages li:nth-child(odd) { background: #eee; }
+
+footer {
+  padding: 5px;
+  text-align: center;
+  background: #000000;
+  color: white;
+  font-size: 15px;
+}
