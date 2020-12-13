@@ -65,7 +65,7 @@ function create () {
   this.otherPlayers = this.physics.add.group();
   this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
   const bg = this.add.image(0, 0, 'FullMap').setOrigin(0).setScale(0.7);
-  const infoBg = this.add.rectangle(0, 0, bg.displayWidth, 40, 0x6666ff).setScrollFactor(0);
+  const infoBg = this.add.rectangle(0, 0, bg.displayWidth, 40, 0x008000).setScrollFactor(0);
   let t = this.add.text(0, 0, 'Player role: ').setScrollFactor(0); // just some text to demonstrate how to stop things moving with the camera, can be changed to show role
   this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
   // glow effect
