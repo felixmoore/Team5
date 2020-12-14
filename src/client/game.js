@@ -29,7 +29,7 @@ const config = {
   }
 };
 
-const game = new Phaser.Game(config); // eslint-disable-line
+const game = new Phaser.Game(config); 
 
 let nameChanged = false;
 let data = {};
@@ -45,6 +45,7 @@ function setName (newName) {
 function preload () {
   this.load.image('circle', 'public/assets/circle.png');
   this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', { frameWidth: 32, frameHeight: 32 }); //just to test anims, from https://pipoya.itch.io/pipoya-free-rpg-character-sprites-nekonin
+  this.load.spritesheet('cat2', 'public/assets/pipo-nekonin002.png', { frameWidth: 32, frameHeight: 32 });
   this.load.image('button_a', 'public/assets/button_a.png');
   this.load.image('button_b', 'public/assets/button_b.png');
   this.load.image('FullMap', 'public/assets/FullMap.png');
@@ -52,6 +53,10 @@ function preload () {
   this.load.image('clue_book', 'public/assets/clues/book_01g.png');
   this.load.image('clue_knife', 'public/assets/clues/sword_03c.png');
   this.load.image('clue_poison', 'public/assets/clues/potion_01a.png');
+  this.load.image('bar_vertical', 'public/assets/bar_vertical.png');
+  this.load.image('bar_horizontal', 'public/assets/bar_horizontal.png');
+  this.load.image('bar_horizontal2', 'public/assets/bar_horizontal2.png');
+  this.load.image('wall', 'public/assets/wall.png');
   this.load.image('timebar', 'public/assets/timebar.png');
   this.load.image('timecontainer', 'public/assets/timecontainer.png');
 
@@ -65,13 +70,16 @@ function create () {
   this.otherPlayers = this.physics.add.group();
   this.localState = {}; // local representation of the server game state. intermittently (30/ps) updated.
   const bg = this.add.image(0, 0, 'FullMap').setOrigin(0).setScale(0.7);
+  this.physics.world.bounds.width = bg.displayWidth;
+  this.physics.world.bounds.height = bg.displayHeight;
   const infoBg = this.add.rectangle(0, 0, bg.displayWidth, 40, 0x008000).setScrollFactor(0);
-  let t = this.add.text(0, 0, 'Player role: ').setScrollFactor(0); // just some text to demonstrate how to stop things moving with the camera, can be changed to show role
+  
   this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
   // glow effect
   customPipeline = game.renderer.addPipeline('Custom', new CustomPipeline(game));
   customPipeline.setFloat1('alpha', 1.0);
 
+  
   configureSocketEvents(self, this.socket);
   //
   // TODO move this to chat.js?
@@ -129,56 +137,79 @@ function create () {
   //self.gameTimer = game.time.events.loop(100, function(){self.updateTimer();})
 }
 
-function createAnims(self, key) {
+function createWalls (self, player) {
+  // self.walls = game.add.group();
+  // self.walls.enableBody = true;
+
+  const walls = self.physics.add.staticGroup();
+  walls.create(50, 0, 'bar_vertical'); //left wall
+  walls.create(50, 300, 'bar_horizontal'); //top of bathroom - bedroom (this cuts off the upper hallway but it's 1am and I don't feel like doing maths - felix)
+  walls.create(2850, 1200, 'bar_horizontal2'); //top of kitchen
+  walls.create(2850, 950, 'bar_horizontal2'); //bottom of bedroom
+  walls.create(400, 1140, 'bar_horizontal2'); //top of lounge (?)
+  walls.create(400, 1020, 'bar_horizontal2'); //bottom of bathroom
+  //TODO left wall of bedroom/kitchen
+  //TODO right wall of bathroom
+  walls.create(1640, 1700, 'wall').setScale(0.7).refreshBody(); //inbetween lounge (?) and kitchen
+  walls.alpha = 0;
+  walls.setVisible(false);
+  self.physics.add.collider(player, walls);
+  //const leftWall = self.add.rectangle(50, 0, 30, 4000, 0x108000);
+
+  //self.physics.add.existing(leftWall);
+  //leftWall.body.immovable = true;
+}
+
+function createAnims (self, anim) {
   self.anims.create({
     key: 'down',
-    frames: self.anims.generateFrameNumbers('cat', { start: 0, end: 2 }),
+    frames: self.anims.generateFrameNumbers(anim, { start: 0, end: 2 }),
     frameRate: 5,
     repeat: -1
   });
 
   self.anims.create({
     key: 'stopDown',
-    frames: [{ key: 'cat', frame: 1 }],
+    frames: [{ key: anim, frame: 1 }],
     frameRate: 20
   });
 
   self.anims.create({
     key: 'left',
-    frames: self.anims.generateFrameNumbers('cat', { start: 3, end: 5 }),
+    frames: self.anims.generateFrameNumbers(anim, { start: 3, end: 5 }),
     frameRate: 5,
     repeat: -1
   });
 
   self.anims.create({
     key: 'stopLeft',
-    frames: [{ key: 'cat', frame: 4 }],
+    frames: [{ key: anim, frame: 4 }],
     frameRate: 20
   });
 
   self.anims.create({
     key: 'right',
-    frames: self.anims.generateFrameNumbers('cat', { start: 6, end: 8 }),
+    frames: self.anims.generateFrameNumbers(anim, { start: 6, end: 8 }),
     frameRate: 5,
     repeat: -1
   });
 
   self.anims.create({
     key: 'stopRight',
-    frames: [{ key: 'cat', frame: 7 }],
+    frames: [{ key: anim, frame: 7 }],
     frameRate: 20
   });
 
   self.anims.create({
     key: 'up',
-    frames: self.anims.generateFrameNumbers('cat', { start: 9, end: 11 }),
+    frames: self.anims.generateFrameNumbers(anim, { start: 9, end: 11 }),
     frameRate: 5,
     repeat: -1
   });
 
   self.anims.create({
     key: 'stopUp',
-    frames: [{ key: 'cat', frame: 10 }],
+    frames: [{ key: anim, frame: 10 }],
     frameRate: 20
   });
 
@@ -186,17 +217,20 @@ function createAnims(self, key) {
 }
 
 function addPlayer (self, playerInfo) {
-  //self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
   self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'cat').setScale(3).setOrigin(0, 0);
   createAnims(self, 'cat');
+  createWalls(self, self.player);
   self.player.anims.play('stopDown', true);
+  self.player.setCollideWorldBounds(true);
   self.player.setTint(playerInfo.colour);
   self.player.room = playerInfo.room;
   self.cameras.main.startFollow(self.player);
 }
 
 function addOtherPlayer (self, playerInfo) {
-  const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'circle').setDisplaySize(playerInfo.width, playerInfo.height).setOrigin(0, 0);
+  const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'cat').setScale(3).setOrigin(0, 0);
+  createAnims(self, 'cat');
+  otherPlayer.anims.play('stopDown', true);
   otherPlayer.setTint(playerInfo.colour);
   otherPlayer.id = playerInfo.id;
   otherPlayer.room = playerInfo.room;
@@ -239,16 +273,13 @@ function checkCollision (self) {
       if (current.linkedTo != null) { // teleport if object is a portal
         self.player.x = locState[current.linkedTo].x; // only portals currently, so transform to linked portal
         self.player.y = locState[current.linkedTo].y; //
-      }
-      else{
-        if (current.clues != null){ //test to see if clue collision logic works
+      } else {
+        if (current.clues != null) { // test to see if clue collision logic works
           self.collectClue();
-          //me.game.state.load('wordsearch', 'src/client/minigames/wordsearch.js') //test line
+          // me.game.state.load('wordsearch', 'src/client/minigames/wordsearch.js') //test line
         }
       }
     }
-
-    
   }
 }
 
@@ -260,6 +291,7 @@ function update () {
     !nameChanged;
   }
 
+  //TODO emit an event to tell others player direction for animations
   if (this.player) {
     if (game.keys.left.isDown) {
       this.player.setVelocityX(-160);
@@ -388,10 +420,13 @@ function handlePlayerMovement (self, data) {
 /* Updates tint on player sprite.
 Used for impostor demo, will probably be unnecessary in future */
 function updateSpriteColour (self, data, colour) {
+  let roleText = self.add.text(0, 0, 'Player role: ').setScrollFactor(0);
   if (data === self.socket.id) {
     self.player.setTint(colour);
     self.socket.emit('colourUpdated', data, colour);
+    roleText.setText('Player role: Impostor - avoid clues!');
   } else {
+    roleText.setText('Player role: Innocent - collect clues!');
     self.otherPlayers.getChildren().forEach((otherPlayer) => {
       if (data === otherPlayer.id) {
         otherPlayer.setTint(colour);
@@ -497,3 +532,4 @@ const CustomPipeline = new Phaser.Class({
     });
   }
 });
+

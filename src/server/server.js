@@ -25,6 +25,7 @@ module.exports.initialiseServer = function (app) {
 
     socket.on('change_username', (data) => {
       socket.username = data.username;
+      players[socket.id].username = socket.username;
     });
 
     // create new player
@@ -32,12 +33,13 @@ module.exports.initialiseServer = function (app) {
       width: 40,
       height: 40,
       // places new player at random location
-      x: Math.floor(Math.random() * 1245),
-      y: Math.floor((Math.random() * 1820) + 216),
+      x: Math.floor((Math.random() * 1245) + 60),
+      y: Math.floor((Math.random() * 1820) + 1300),
       id: socket.id,
       // generate random colour, taken from [here]{@link https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
       colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
-      room: 'lobby'
+      room: 'lobby',
+      username: socket.username
     };
 
     /**
@@ -48,16 +50,16 @@ module.exports.initialiseServer = function (app) {
     gameState.objects['button_a'] = {
       width: 36,
       height: 36,
-      x: 60,
-      y: 60,
+      x: 101,
+      y: 325,
       image: 'button_a',
       linkedTo: 'button_b'
     };
     gameState.objects['button_b'] = {
       width: 36,
       height: 36,
-      x: 660,
-      y: 460,
+      x: 3069,
+      y: 1701,
       image: 'button_b',
       linkedTo: 'button_a'
     };
