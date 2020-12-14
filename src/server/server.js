@@ -33,8 +33,8 @@ module.exports.initialiseServer = function (app) {
       width: 40,
       height: 40,
       // places new player at random location
-      x: Math.floor((Math.random() * 1245) + 60),
-      y: Math.floor((Math.random() * 1820) + 1300),
+      x: Math.floor((Math.random() * 1180) + 20),
+      y: Math.floor((Math.random() * 445) + 1200),
       id: socket.id,
       // generate random colour, taken from [here]{@link https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
       colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
@@ -151,35 +151,71 @@ module.exports.initialiseServer = function (app) {
 
 function generateClues (gameState) {
   // hardcoded for MVP demo, eventually randomly generated
-  gameState.objects['clue_bone'] = {
+  //lounge
+  gameState.objects['clue_bone1'] = {
     width: 32,
     height: 32,
-    x: 900,
-    y: 1500,
+    x: Math.floor((Math.random() * 1180) + 20),
+    y: Math.floor((Math.random() * 445) + 1200),
     image: 'clue_bone'
   };
 
-  gameState.objects['clue_knife'] = {
+  //kitchen
+  gameState.objects['clue_bone2'] = {
     width: 32,
     height: 32,
-    x: 800,
-    y: 1400,
+    x: Math.floor((Math.random() * 1149) + 1915),
+    y: Math.floor((Math.random() * 374) + 1271),
+    image: 'clue_bone'
+  };
+
+  gameState.objects['clue_knife1'] = {
+    width: 32,
+    height: 32,
+    x: Math.floor((Math.random() * 1180) + 20),
+    y: Math.floor((Math.random() * 445) + 1200),
     image: 'clue_knife'
   };
 
-  gameState.objects['clue_book'] = {
+  gameState.objects['clue_knife2'] = {
     width: 32,
     height: 32,
-    x: 600,
-    y: 1200,
+    x: Math.floor((Math.random() * 1149) + 1915),
+    y: Math.floor((Math.random() * 374) + 1271),
+    image: 'clue_knife'
+  };
+
+  gameState.objects['clue_book1'] = {
+    width: 32,
+    height: 32,
+    x: Math.floor((Math.random() * 1180) + 20),
+    y: Math.floor((Math.random() * 445) + 1200),
     image: 'clue_book'
   };
 
-  gameState.objects['clue_poison'] = {
+  //bedroom
+  gameState.objects['clue_book2'] = {
     width: 32,
     height: 32,
-    x: 600,
-    y: 1400,
+    x: Math.floor((Math.random() * 1168) + 1915),
+    y: Math.floor((Math.random() * 461) + 336),
+    image: 'clue_book'
+  };
+
+  gameState.objects['clue_poison1'] = {
+    width: 32,
+    height: 32,
+    x: Math.floor((Math.random() * 1168) + 1915),
+    y: Math.floor((Math.random() * 461) + 336),
+    image: 'clue_poison'
+  };
+
+  //bathroom
+  gameState.objects['clue_poison1'] = {
+    width: 32,
+    height: 32,
+    x: Math.floor((Math.random() * 1197) + 65),
+    y: Math.floor((Math.random() * 485) + 424),
     image: 'clue_poison'
   };
 }

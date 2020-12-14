@@ -57,8 +57,8 @@ function preload () {
   this.load.image('bar_horizontal', 'public/assets/bar_horizontal.png');
   this.load.image('bar_horizontal2', 'public/assets/bar_horizontal2.png');
   this.load.image('wall', 'public/assets/wall.png');
-  this.load.image('timebar', 'public/assets/timebar.png');
-  this.load.image('timecontainer', 'public/assets/timecontainer.png');
+  this.load.image('timeBar', 'public/assets/timebar.png');
+  this.load.image('timeContainer', 'public/assets/timecontainer.png');
 
   //loads minigame js files for when events are called
   //game.state.add('wordsearch', 'src/client/minigames/wordsearch.js');
@@ -73,13 +73,11 @@ function create () {
   this.physics.world.bounds.width = bg.displayWidth;
   this.physics.world.bounds.height = bg.displayHeight;
   const infoBg = this.add.rectangle(0, 0, bg.displayWidth, 40, 0x008000).setScrollFactor(0);
-  
   this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
   // glow effect
   customPipeline = game.renderer.addPipeline('Custom', new CustomPipeline(game));
   customPipeline.setFloat1('alpha', 1.0);
 
-  
   configureSocketEvents(self, this.socket);
   //
   // TODO move this to chat.js?
@@ -111,6 +109,7 @@ function create () {
     var key = Object.keys(allPlayers);
     let picked = allPlayers[key[ key.length * Math.random() << 0]];
     socket.emit('impostorGenerated', picked.id);
+    createTimer(self);
   });
   /* eslint-enable */
   // end todo section
@@ -123,18 +122,8 @@ function create () {
     left: 'left',
     right: 'right'
   });
-
-  clues = this.physics.add.group(); // group for all clue objects
-  clues.create(400,568, 'clue_bone'); //creates an instance of the bone clue and places it at location
-
-  //self.initialTime = 6000;
-  //self.remainingTime = initialTime; 
-
-  //this.add.image(0,50, 'timeContainer');
-  //this.add.image(self.timeContainer.x +46, self.timeContainer.y, 'timeBar');
-
-  //self.createTimer();
-  //self.gameTimer = game.time.events.loop(100, function(){self.updateTimer();})
+  // clues = this.physics.add.group(); // group for all clue objects
+  // clues.create(400,568, 'clue_bone'); //creates an instance of the bone clue and places it at location
 }
 
 function createWalls (self, player) {
@@ -154,10 +143,6 @@ function createWalls (self, player) {
   walls.alpha = 0;
   walls.setVisible(false);
   self.physics.add.collider(player, walls);
-  //const leftWall = self.add.rectangle(50, 0, 30, 4000, 0x108000);
-
-  //self.physics.add.existing(leftWall);
-  //leftWall.body.immovable = true;
 }
 
 function createAnims (self, anim) {
@@ -328,6 +313,7 @@ function update () {
     // emit update
     const x = this.player.x;
     const y = this.player.y;
+    console.log(x + ' ' + y);
 
     if (this.player.previous && (x !== this.player.previous.x || y !== this.player.previous.y)) {
       this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y });
@@ -477,14 +463,43 @@ function collectClue(){
   self.game.state.load('wordsearch', 'src/client/minigames/wordsearch.js')
 }
 
-/* function createTimer(){
-  const self = this;
+function createTimer (self) {
+  // const self = this;
 
-  
+  // let initialTime = 6000;
+  // self.remainingTime = initialTime;
 
-  self.timeBar = self.game.add.sprite(self.timeBar.x, self.timeBar.y, 'timeBar');
-  self.timeBar.cropEnabled = true;
+  // let timeContainer = self.add.image(630, 670, 'timeContainer').setScrollFactor(0).setScale(0.5);
+  // self.add.image(timeContainer.x + 23, timeContainer.y, 'timeBar').setScrollFactor(0).setScale(0.5);
 
+  // self.gameTimer = game.time.events.loop(100, function () { updateTimer(); });
+
+  // self.timeBar = self.game.add.sprite(self.timeBar.x, self.timeBar.y, 'timeBar');
+  // self.timeBar.cropEnabled = true;
+
+  // -------------------------
+  // Simpler alternative timer
+  /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
+  const timerBg = self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
+  self.initialTime = 150;
+  timerText = self.add.text(630, 670, 'Time remaining: ' + formatTime(this.initialTime)).setScrollFactor(0);
+  // Each 1000 ms call onEvent
+  timedEvent = self.time.addEvent({ delay: 1000, callback: onEvent, callbackScope: self, loop: true });
+}
+function formatTime(seconds) {
+  // Minutes
+  let minutes = Math.floor(seconds / 60);
+  // Seconds
+  let partInSeconds = seconds % 60;
+  // Adds left zeros to seconds
+  partInSeconds = partInSeconds.toString().padStart(2, '0');
+  // Returns formated time
+  return `${minutes}:${partInSeconds}`;
+}
+
+function onEvent () {
+  this.initialTime -= 1; // One second
+  timerText.setText('Countdown: ' + formatTime(this.initialTime));
 }
 
 function updateTimer(){
@@ -494,7 +509,7 @@ function updateTimer(){
 
   var cropTimeBar = new Phaser.timeBar(self.timeBar.x, self.timeBar.y,(self.remainingTime/self.initialTime)* self.timeBar.width, self.timeBar.height);
   self.timeBar.crop(cropTimeBar);
-} */
+} 
 
 // Custom texture pipeline used to make the clue sprites flash, needs to be moved to another file after MVP
 const CustomPipeline = new Phaser.Class({
