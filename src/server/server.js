@@ -39,7 +39,8 @@ module.exports.initialiseServer = function (app) {
       // generate random colour, taken from [here]{@link https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
       colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
       room: 'lobby',
-      username: socket.username
+      username: socket.username,
+      impostor: false
     };
 
     /**
@@ -87,14 +88,19 @@ module.exports.initialiseServer = function (app) {
     });
 
     socket.on('gameStarted', () => {
-      generateClues(gameState)
+      generateClues(gameState);
       io.emit('drawObjects', gameState.objects);
-      console.log('clues sent');
     });
 
     // New chat message event
     socket.on('newMessage', (msg) => {
       io.emit('newMessage', (socket.username + ': ' + msg));
+    });
+
+    // Voting started
+    socket.on('votingStart', () => {
+      console.log('data sent');
+      io.emit('votingData', (players));
     });
 
     // Fires when clue is collected
@@ -105,7 +111,7 @@ module.exports.initialiseServer = function (app) {
 
     socket.on('impostorGenerated', (picked) => {
       io.emit('colourUpdate', picked, 0xFF0000); // turns the impostor red - just to demonstrate for now
-      // TODO change this to a secret flag in player object
+      players[picked].impostor = true;
       // TODO make sure impostor can either only be generated once
       // or that if it's generated again, the previous impostor's flag is set to false
     });

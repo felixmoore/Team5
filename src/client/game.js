@@ -313,7 +313,7 @@ function update () {
     // emit update
     const x = this.player.x;
     const y = this.player.y;
-    console.log(x + ' ' + y);
+    // console.log(x + ' ' + y);
 
     if (this.player.previous && (x !== this.player.previous.x || y !== this.player.previous.y)) {
       this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y });
@@ -408,14 +408,14 @@ Used for impostor demo, will probably be unnecessary in future */
 function updateSpriteColour (self, data, colour) {
   let roleText = self.add.text(0, 0, 'Player role: ').setScrollFactor(0);
   if (data === self.socket.id) {
-    self.player.setTint(colour);
+    //self.player.setTint(colour);
     self.socket.emit('colourUpdated', data, colour);
     roleText.setText('Player role: Impostor - avoid clues!');
   } else {
     roleText.setText('Player role: Innocent - collect clues!');
     self.otherPlayers.getChildren().forEach((otherPlayer) => {
       if (data === otherPlayer.id) {
-        otherPlayer.setTint(colour);
+        //otherPlayer.setTint(colour);
         self.socket.emit('colourUpdated', data, colour);
       }
     });
@@ -481,12 +481,12 @@ function createTimer (self) {
   // Simpler alternative timer
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   const timerBg = self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 150;
-  timerText = self.add.text(630, 670, 'Time remaining: ' + formatTime(this.initialTime)).setScrollFactor(0);
+  self.initialTime = 100; // in seconds
+  timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(this.initialTime)).setScrollFactor(0);
   // Each 1000 ms call onEvent
   timedEvent = self.time.addEvent({ delay: 1000, callback: onEvent, callbackScope: self, loop: true });
 }
-function formatTime(seconds) {
+function formatTime (seconds) {
   // Minutes
   let minutes = Math.floor(seconds / 60);
   // Seconds
@@ -500,16 +500,24 @@ function formatTime(seconds) {
 function onEvent () {
   this.initialTime -= 1; // One second
   timerText.setText('Countdown: ' + formatTime(this.initialTime));
+
+  if (this.initialTime === 0) {
+    if (this.scene.isVisible('discussionScene')) {
+      this.scene.add('votingScene', VotingScene, true);
+      this.initialTime = 60;
+    } else {
+      this.scene.add('discussionScene', DiscussionScene, true);
+      this.initialTime = 60;
+    }
+  }
 }
 
-function updateTimer(){
+function updateTimer () {
   const self = this;
-
-  self.remainingTime -=10;
-
+  self.remainingTime -= 10;
   var cropTimeBar = new Phaser.timeBar(self.timeBar.x, self.timeBar.y,(self.remainingTime/self.initialTime)* self.timeBar.width, self.timeBar.height);
   self.timeBar.crop(cropTimeBar);
-} 
+}
 
 // Custom texture pipeline used to make the clue sprites flash, needs to be moved to another file after MVP
 const CustomPipeline = new Phaser.Class({
@@ -548,3 +556,56 @@ const CustomPipeline = new Phaser.Class({
   }
 });
 
+class DiscussionScene extends Phaser.Scene {
+  preload () {
+    
+  }
+
+  create () {
+    this.cameras.main.backgroundColor.setTo(0);
+    this.add.text(20, 20, 'Time to vote!').setColor("#ff0000", 0).setFontSize(30);
+    this.add.text(20, 50, 'Decide on who you think the impostor is...').setColor("#ff0000", 0).setFontSize(30);
+    this.add.text(600, 80, 'Discuss -->').setColor("#ff0000", 0).setFontSize(30);
+    createTimer(this);
+    this.input.once('pointerdown', function () {
+      // this.scene.add('mansionScene', MansionScene, true);
+      Object.keys(getOtherPlayers()).forEach(o => {
+      });
+    }, this);
+  }
+}
+
+class VotingScene extends Phaser.Scene {
+  preload () {
+    this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', { frameWidth: 32, frameHeight: 32 });
+  }
+
+  create () {
+    this.cameras.main.backgroundColor.setTo(0);
+    this.add.text(20, 20, 'Time to vote!').setColor("#ff0000", 0).setFontSize(30);
+    this.add.text(20, 50, 'Decide on who you think the impostor is...').setColor("#ff0000", 0).setFontSize(30);
+    this.socket = io();
+    this.socket.emit('votingStart');
+    this.socket.on('votingData', (data) => {
+      console.log(data);
+      //draw all sprites + usernames
+      let x = 70;
+      let y = 70;
+      Object.keys(data).forEach((index) => {
+        this.add.sprite(x, y, 'cat').setScale(3).setOrigin(0, 0).setTint(data[index].colour);
+        //TODO add a click event & some way of storing a vote
+        this.add.text(x, y + 100, data[index].username).setColor("#ff0000", 0).setFontSize(15);
+        x += 100;
+        if (x >= 400) {
+          x = 70;
+          y += 60;
+        }
+      });
+    });
+
+    //createTimer(this);
+    this.input.once('pointerdown', function () {
+      // this.scene.add('mansionScene', MansionScene, true);
+    }, this);
+  }
+}
