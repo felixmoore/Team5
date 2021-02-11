@@ -4,9 +4,10 @@ A social deduction game.
 
 [![js-semistandard-style](https://raw.githubusercontent.com/standard/semistandard/master/badge.svg)](https://github.com/standard/semistandard)
 
-## Branch - MVP
+## Branch - Main
 
-Progress on the Minimum Viable Product.
+MVP work > developing into final submission
+Heroku deployment still based on mvp branch for now.
 
 ### How to run this?:
 Go to https://deception-game.herokuapp.com/!
