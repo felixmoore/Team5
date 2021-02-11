@@ -1,16 +1,23 @@
 {
-  "name": "hack",
+  "name": "Deception",
   "version": "1.0.0",
-  "description": "First hack for submission",
+  "description": "A social deduction murder mystery game.",
   "main": "server.js",
-  "scripts": {
-    "test": ""
+  "devDependencies": {
+    "semistandard": "*",
+    "jsdoc": "^3.6.6"
   },
-  "author": "",
+  "scripts": {
+    "test": "semistandard && node tests/tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/felixmoore/Team5"
+  },
+  "author": "Team 5",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "jsdoc": "^3.6.6",
     "socket.io": "^2.3.0"
   }
 }

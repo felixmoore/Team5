@@ -2,9 +2,11 @@
 
 A social deduction game.
 
-## Branch - main
+[![js-semistandard-style](https://raw.githubusercontent.com/standard/semistandard/master/badge.svg)](https://github.com/standard/semistandard)
 
-Progress on the first hack, now with chat & magic portals!
+## Branch - MVP
+
+Progress on the Minimum Viable Product.
 
 ### How to run this?:
 Go to https://deception-game.herokuapp.com/!
@@ -18,7 +20,9 @@ Go to https://deception-game.herokuapp.com/!
 - in your terminal, navigate to the `Team5` folder (or wherever you store the project files)
 - run `npm install`
 - in the `server.js` file change `const port` to = 3000.
-- run `node server.js`
+- run `node start.js`
 - in your browser, open up http://localhost:3000/ in a couple of different tabs.
 - any movement should be reflected in the other tabs.
 
+Clue images:
+https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack
