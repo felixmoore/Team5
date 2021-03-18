@@ -7,9 +7,7 @@
     <link href="/public/assets/style.css" rel="stylesheet">
     
     <script src="/socket.io/socket.io.js"></script> <!--referencing socket.io-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.24.1/phaser.min.js"
-    integrity="sha512-HY/qPTJqpvoNGRufGPn4Tl7duHSam8NfrfTZUHyn5M39oEBcq8p6IeGBE9e+AupikS4Utt+uJhSgG3FYZp/yxA=="
-    crossorigin="anonymous"></script><!--referencing Phaser framework-->
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.52.0/dist/phaser.js"></script><!--referencing Phaser framework-->
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script> <!--referencing jQuery-->
 
     <style>
@@ -23,16 +21,17 @@
   <body>
       <header>
         <h1> Deception </h1>
-        <h2> Pre-alpha release - Minimum Viable Product </h2>
+        <h2> A social deduction game. </h2>
       </header>
-        <script src="../../src/client/game.js"></script>
+        <script type="module" src="../../src/client/game.js"></script>
+        <script type="module" src="../../src/client/mansion.js"></script>
         <div id="wrapper">
           <div class="container">
             <div class="container-box a" id="game"></div>
             <div class="container-box" id="chatBox">
               <div class="container" id="nameInputBox">
                   <input id="nameInput" type="text" placeholder="Set your name here" autocomplete="off"/>
-                  <button type="button" onclick="setName(document.getElementById('nameInput').value)"> Set username </button>
+                  <button id="setUsername" type="button"> Set username </button>
                   <button id="startGame" type="button"> Start game </button>
               </div>
               <form id="chat" action="">

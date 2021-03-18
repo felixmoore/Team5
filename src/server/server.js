@@ -9,7 +9,7 @@
 const { deflateRawSync } = require('zlib');
 
 module.exports.initialiseServer = function (app) {
-  const port = process.env.PORT; // uncomment before push
+  // const port = process.env.PORT; // uncomment before push
   // const port = 3000; // uncomment for local use
 
   const server = require('http').createServer(app);
@@ -17,24 +17,30 @@ module.exports.initialiseServer = function (app) {
   let players = {};
   let gameState = {}; //??
   let clues = {};
-
+  function setName (newName) {
+    // data.username = newName;
+    // nameChanged = true;
+    socket.broadcast.emit('change_username', (newName))
+  }
   io.on('connection', (socket) => { // socket.io detects a connection, output to console.
     console.log('User connected: ID', socket.id);
     socket.join('lobby');
     socket.username = 'Anonymous' + socket.id;
 
+    
     socket.on('change_username', (data) => {
       socket.username = data.username;
       players[socket.id].username = socket.username;
+
     });
 
     // create new player
     players[socket.id] = {
       width: 40,
       height: 40,
-      // places new player at random location
-      x: Math.floor((Math.random() * 1180) + 20),
-      y: Math.floor((Math.random() * 445) + 1200),
+      // places new player at random location in the living room
+      x: Math.floor((Math.random() * 768) + 48),
+      y: Math.floor((Math.random() * 336) + 1452),
       id: socket.id,
       // generate random colour, taken from [here]{@link https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
       colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
@@ -51,16 +57,16 @@ module.exports.initialiseServer = function (app) {
     gameState.objects['button_a'] = {
       width: 36,
       height: 36,
-      x: 101,
-      y: 325,
+      x: 141,
+      y: 345,
       image: 'button_a',
       linkedTo: 'button_b'
     };
     gameState.objects['button_b'] = {
       width: 36,
       height: 36,
-      x: 3069,
-      y: 1701,
+      x: 2069,
+      y: 1740,
       image: 'button_b',
       linkedTo: 'button_a'
     };
@@ -138,8 +144,8 @@ module.exports.initialiseServer = function (app) {
       io.sockets.emit('sendState', gameState.objects);
   }, 1000 / 30); //emit game state 30 times per second
 
-  server.listen(port, () => {
-    console.log('Listening on *:' + port);
+  server.listen(process.env.PORT || 3000, () => {
+    console.log(`Listening on *: ${process.env.PORT || 3000}`);
   });
 
   /** To be implemented after MVP demo, not 100% necessary for now. */
