@@ -2,7 +2,7 @@
 
 A social deduction game.
 
-## Branch - Main
+## Branch - Tileset
 
 MVP work > developing into final submission
 
