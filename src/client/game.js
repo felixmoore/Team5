@@ -1,66 +1,60 @@
-import Mansion from './mansion.js';
 import Discussion from './discussion.js';
-import Voting from './voting.js';
+import Mansion from './mansion.js';
 import Drag from './minigames/drag.js';
+import Voting from './voting.js';
 
-//import CustomPipeline from './pipeline.js';
+// import CustomPipeline from './pipeline.js';
 
 const config = {
-    type: Phaser.AUTO,
-    audio: {
-      disableWebAudio: true,
-      noAudio: false
-    },
-    scale: {
-        mode: Phaser.Scale.FIT,
-        parent: 'game', // renders in a <canvas> element with id game
-        width: 800,
-        height: 700
-      },
-      physics: { // physics framework from Phaser
-        default: 'arcade',
-        arcade: {
-          debug: false,
-          gravity: {
-            y: 0
-          }
-        }
-      },
-    scene: [ {preload, create}, Mansion, Discussion, Voting, Drag ]
-    // ,callbacks: {
-    //   postBoot: game => {
-    //     game.renderer.addPipeline('Custom', new CustomPipeline(game)).setFloat1('alpha', 1.0);
-    //   }
-    // }
-  };
-  
+  type : Phaser.AUTO,
+  audio : {disableWebAudio : true, noAudio : false},
+  scale : {
+    mode : Phaser.Scale.FIT,
+    parent : 'game', // renders in a <canvas> element with id game
+    width : 800,
+    height : 700
+  },
+  physics : {
+    // physics framework from Phaser
+    default : 'arcade',
+    arcade : {debug : false, gravity : {y : 0}}
+  },
+  scene : [ {preload, create}, Mansion, Discussion, Voting, Drag ]
+  // ,callbacks: {
+  //   postBoot: game => {
+  //     game.renderer.addPipeline('Custom', new
+  //     CustomPipeline(game)).setFloat1('alpha', 1.0);
+  //   }
+  // }
+};
+
 const game = new Phaser.Game(config);
-function setName (newName) {
+function setName(newName) {
   data.username = newName;
   nameChanged = true;
 }
 
 function preload() {
-    //TODO add loading screen
-    // game.renderer.addPipeline('Custom', new CustomPipeline(game)).setFloat1('alpha', 1.0);
-  }
-  
-async function create() {
-    this.scene.start('mansion');
-    // this.renderer.addPipeline('Custom', new CustomPipeline(this)).setFloat1('alpha', 1.0);
+  // TODO add loading screen
+  // game.renderer.addPipeline('Custom', new
+  // CustomPipeline(game)).setFloat1('alpha', 1.0);
 }
 
+async function create() {
+  this.scene.start('mansion');
+  // this.renderer.addPipeline('Custom', new
+  // CustomPipeline(this)).setFloat1('alpha', 1.0);
+}
 
-
-// Custom texture pipeline used to make the clue sprites flash, needs to be moved to another file after MVP
+// Custom texture pipeline used to make the clue sprites flash, needs to be
+// moved to another file after MVP
 const CustomPipeline = new Phaser.Class({
-  Extends: Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
-  initialize:
-  function CustomPipeline (game) {
+  Extends : Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline,
+  initialize : function CustomPipeline(game) {
     Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline.call(this, {
-      game: game,
-      renderer: game.renderer,
-      fragShader: [
+      game : game,
+      renderer : game.renderer,
+      fragShader : [
         'precision lowp float;',
         'varying vec2 outTexCoord;',
         'varying vec4 outTint;',
