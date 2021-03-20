@@ -2,11 +2,11 @@
 
 A social deduction game.
 
-## Branch - Tileset
+## Branch - Main
 
 MVP work > developing into final submission
 
-Heroku deployment = most recent commit here.
+Heroku deployment based on this branch.
 
 ### How to run this?:
 Go to https://deception-game.herokuapp.com/!
