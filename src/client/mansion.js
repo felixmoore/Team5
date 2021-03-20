@@ -139,7 +139,7 @@ class Mansion extends Phaser.Scene {
     clue_collect.play();
     bgm = this.sound.add('bgm', { volume: 0.5 });
     bgm.setLoop(true);
-    bgm.play();
+    // bgm.play(); //commented out for now to stop it being annoying while debugging
 
     // TODO move jquery to chat.js?
     // jquery to handle new message & clear chat box
