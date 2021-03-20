@@ -9,50 +9,49 @@
  * @author Felix Moore, James Kerr
  */
 
-const {deflateRawSync} = require('zlib');
+const { deflateRawSync } = require("zlib");
 
-module.exports.initialiseServer =
-    function(app) {
+module.exports.initialiseServer = function (app) {
   // const port = process.env.PORT; // uncomment before push
   // const port = 3000; // uncomment for local use
 
-  const server = require('http').createServer(app);
-  const io = require('socket.io').listen(server);
+  const server = require("http").createServer(app);
+  const io = require("socket.io").listen(server);
   let players = {};
   let gameState = {}; //??
   let clues = {};
   function setName(newName) {
     // data.username = newName;
     // nameChanged = true;
-    socket.broadcast.emit('change_username', (newName))
+    socket.broadcast.emit("change_username", newName);
   }
-  io.on('connection', (socket) => { // socket.io detects a connection, output to
-                                    // console.
-    console.log('User connected: ID', socket.id);
-    socket.join('lobby');
-    socket.username = 'Anonymous' + socket.id;
+  io.on("connection", (socket) => {
+    // socket.io detects a connection, output to
+    // console.
+    console.log("User connected: ID", socket.id);
+    socket.join("lobby");
+    socket.username = "Anonymous" + socket.id;
 
-    socket.on('change_username', (data) => {
+    socket.on("change_username", (data) => {
       socket.username = data.username;
       players[socket.id].username = socket.username;
     });
 
     // create new player
     players[socket.id] = {
-      width : 40,
-      height : 40,
+      width: 40,
+      height: 40,
       // places new player at random location in the living room
-      x : Math.floor((Math.random() * 768) + 48),
-      y : Math.floor((Math.random() * 336) + 1452),
-      id : socket.id,
+      x: Math.floor(Math.random() * 768 + 48),
+      y: Math.floor(Math.random() * 336 + 1452),
+      id: socket.id,
       // generate random colour, taken from [here]{@link
       // https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
-      colour :
-          ('0x' +
-           (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
-      room : 'lobby',
-      username : socket.username,
-      impostor : false
+      colour:
+        "0x" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6),
+      room: "lobby",
+      username: socket.username,
+      impostor: false,
     };
 
     /**
@@ -60,69 +59,69 @@ module.exports.initialiseServer =
      */
     gameState.objects = {};
 
-    gameState.objects['button_a'] = {
-      width : 36,
-      height : 36,
-      x : 141,
-      y : 345,
-      image : 'button_a',
-      linkedTo : 'button_b'
+    gameState.objects["button_a"] = {
+      width: 36,
+      height: 36,
+      x: 141,
+      y: 345,
+      image: "button_a",
+      linkedTo: "button_b",
     };
-    gameState.objects['button_b'] = {
-      width : 36,
-      height : 36,
-      x : 2069,
-      y : 1740,
-      image : 'button_b',
-      linkedTo : 'button_a'
+    gameState.objects["button_b"] = {
+      width: 36,
+      height: 36,
+      x: 2069,
+      y: 1740,
+      image: "button_b",
+      linkedTo: "button_a",
     };
 
     /**
      * Draw object layer first.
      */
-    socket.emit('drawObjects', gameState.objects);
+    socket.emit("drawObjects", gameState.objects);
 
     // load all current players
-    socket.emit('currentPlayers', players);
+    socket.emit("currentPlayers", players);
     // notify other players
 
-    socket.broadcast.emit('newPlayer', players[socket.id]);
+    socket.broadcast.emit("newPlayer", players[socket.id]);
 
-    socket.on('playerMovement', (data) => {
+    socket.on("playerMovement", (data) => {
       players[socket.id].x = data.x;
       players[socket.id].y = data.y;
 
-      socket.broadcast.emit('playerMoved', players[socket.id]);
+      socket.broadcast.emit("playerMoved", players[socket.id]);
     });
 
-    socket.on('colourUpdated',
-              (data, colour) => { players[data].colour = colour; });
+    socket.on("colourUpdated", (data, colour) => {
+      players[data].colour = colour;
+    });
 
-    socket.on('gameStarted', () => {
+    socket.on("gameStarted", () => {
       generateClues(gameState);
-      io.emit('drawObjects', gameState.objects);
+      io.emit("drawObjects", gameState.objects);
     });
 
     // New chat message event
-    socket.on(
-        'newMessage',
-        (msg) => { io.emit('newMessage', (socket.username + ': ' + msg)); });
+    socket.on("newMessage", (msg) => {
+      io.emit("newMessage", socket.username + ": " + msg);
+    });
 
     // Voting started
-    socket.on('votingStart', () => {
-      console.log('data sent');
-      io.emit('votingData', (players));
+    socket.on("votingStart", () => {
+      console.log("data sent");
+      io.emit("votingData", players);
     });
 
     // Fires when clue is collected
-    socket.on('clueCollected', (clue) => {
+    socket.on("clueCollected", (clue) => {
       delete clues[clue];
-      io.emit('updateClues', clue);
+      io.emit("updateClues", clue);
     });
 
-    socket.on('impostorGenerated', (picked) => {
-      io.emit('colourUpdate', picked,
-              0xFF0000); // turns the impostor red - just to demonstrate for now
+    socket.on("impostorGenerated", (picked) => {
+      io.emit("colourUpdate", picked, 0xff0000); // turns the impostor red - just to demonstrate for now
       players[picked].impostor = true;
       // TODO make sure impostor can either only be generated once
       // or that if it's generated again, the previous impostor's flag is set to
@@ -130,10 +129,10 @@ module.exports.initialiseServer =
     });
 
     // player disconnected
-    socket.on('disconnect', () => {
-      console.log('User disconnected: ID', socket.id);
-      delete players[socket.id];        // remove player
-      io.emit('disconnect', socket.id); // notify other players
+    socket.on("disconnect", () => {
+      console.log("User disconnected: ID", socket.id);
+      delete players[socket.id]; // remove player
+      io.emit("disconnect", socket.id); // notify other players
     });
   });
 
@@ -147,18 +146,19 @@ module.exports.initialiseServer =
    * and update accordingly. i.e. this is the propogation of the data
    * back to the 'view'
    */
-  setInterval(() => { io.sockets.emit('sendState', gameState.objects); },
-              1000 / 30); // emit game state 30 times per second
+  setInterval(() => {
+    io.sockets.emit("sendState", gameState.objects);
+  }, 1000 / 30); // emit game state 30 times per second
 
-  server.listen(
-      process.env.PORT || 3000,
-      () => { console.log(`Listening on *: ${process.env.PORT || 3000}`); });
+  server.listen(process.env.PORT || 3000, () => {
+    console.log(`Listening on *: ${process.env.PORT || 3000}`);
+  });
 
   /** To be implemented after MVP demo, not 100% necessary for now. */
   function createRoomCode() {
     const characters =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let code = '';
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let code = "";
     for (let i = 0; i < 5; i++) {
       code += characters.charAt(Math.floor(Math.random() * characters.length));
     }
@@ -166,75 +166,75 @@ module.exports.initialiseServer =
     // another code
     return code;
   }
-}
+};
 
 function generateClues(gameState) {
   // hardcoded for MVP demo, eventually randomly generated
   // lounge
-  gameState.objects['clue_bone1'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1180) + 20),
-    y : Math.floor((Math.random() * 445) + 1200),
-    image : 'clue_bone'
+  gameState.objects["clue_bone1"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1180 + 20),
+    y: Math.floor(Math.random() * 445 + 1200),
+    image: "clue_bone",
   };
 
   // kitchen
-  gameState.objects['clue_bone2'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1149) + 1915),
-    y : Math.floor((Math.random() * 374) + 1271),
-    image : 'clue_bone'
+  gameState.objects["clue_bone2"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1149 + 1915),
+    y: Math.floor(Math.random() * 374 + 1271),
+    image: "clue_bone",
   };
 
-  gameState.objects['clue_knife1'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1180) + 20),
-    y : Math.floor((Math.random() * 445) + 1200),
-    image : 'clue_knife'
+  gameState.objects["clue_knife1"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1180 + 20),
+    y: Math.floor(Math.random() * 445 + 1200),
+    image: "clue_knife",
   };
 
-  gameState.objects['clue_knife2'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1149) + 1915),
-    y : Math.floor((Math.random() * 374) + 1271),
-    image : 'clue_knife'
+  gameState.objects["clue_knife2"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1149 + 1915),
+    y: Math.floor(Math.random() * 374 + 1271),
+    image: "clue_knife",
   };
 
-  gameState.objects['clue_book1'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1180) + 20),
-    y : Math.floor((Math.random() * 445) + 1200),
-    image : 'clue_book'
+  gameState.objects["clue_book1"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1180 + 20),
+    y: Math.floor(Math.random() * 445 + 1200),
+    image: "clue_book",
   };
 
   // bedroom
-  gameState.objects['clue_book2'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1168) + 1915),
-    y : Math.floor((Math.random() * 461) + 336),
-    image : 'clue_book'
+  gameState.objects["clue_book2"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1168 + 1915),
+    y: Math.floor(Math.random() * 461 + 336),
+    image: "clue_book",
   };
 
-  gameState.objects['clue_poison1'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1168) + 1915),
-    y : Math.floor((Math.random() * 461) + 336),
-    image : 'clue_poison'
+  gameState.objects["clue_poison1"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1168 + 1915),
+    y: Math.floor(Math.random() * 461 + 336),
+    image: "clue_poison",
   };
 
   // bathroom
-  gameState.objects['clue_poison1'] = {
-    width : 32,
-    height : 32,
-    x : Math.floor((Math.random() * 1197) + 65),
-    y : Math.floor((Math.random() * 485) + 424),
-    image : 'clue_poison'
+  gameState.objects["clue_poison1"] = {
+    width: 32,
+    height: 32,
+    x: Math.floor(Math.random() * 1197 + 65),
+    y: Math.floor(Math.random() * 485 + 424),
+    image: "clue_poison",
   };
 }
