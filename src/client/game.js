@@ -2,6 +2,8 @@ import Mansion from './mansion.js';
 import Discussion from './discussion.js';
 import Voting from './voting.js';
 import Drag from './minigames/drag.js';
+import Collect from './minigames/collect.js';
+import GameOver from './minigames/gameOver.js';
 
 //import CustomPipeline from './pipeline.js';
 
@@ -26,7 +28,7 @@ const config = {
           }
         }
       },
-    scene: [ {preload, create}, Mansion, Discussion, Voting, Drag ]
+    scene: [ {preload, create}, Mansion, Discussion, Voting, Drag, Collect, GameOver ]
     // ,callbacks: {
     //   postBoot: game => {
     //     game.renderer.addPipeline('Custom', new CustomPipeline(game)).setFloat1('alpha', 1.0);

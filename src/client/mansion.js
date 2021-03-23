@@ -186,11 +186,15 @@ class Mansion extends Phaser.Scene {
     if (startGame) {
       const testRect = this.add.rectangle(1988, 816, 500, 300, 0x008000).setScrollFactor(0);
 
-      //debug way of accessing the drag & drop minigame
+      //debug way of accessing the minigames
       //TODO remove
       let keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);;
       if (keyQ.isDown){
         this.scene.start('drag');
+      }
+      let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);;
+      if (keyW.isDown){
+        this.scene.start('collect');
       }
 
       if (nameChanged) {
