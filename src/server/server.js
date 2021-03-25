@@ -6,6 +6,7 @@
 * @author Felix Moore, James Kerr
 */
 
+const { doesNotMatch } = require('assert');
 const { deflateRawSync } = require('zlib');
 
 module.exports.initialiseServer = function (app) {
@@ -128,6 +129,7 @@ module.exports.initialiseServer = function (app) {
       delete players[socket.id]; // remove player
       io.emit('disconnect', socket.id); // notify other players
     });
+
   });
 
   /**
