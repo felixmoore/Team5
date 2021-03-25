@@ -11,15 +11,29 @@ class Drag extends Phaser.Scene {
     }
 
     create() {
+        let colours = ['0x8E44AD', '0xffff00', '0x0CFF00', '0x0013FF', '0xFF0061', '0x00FBFF'];
         this.add.image(400, 300, 'background').setScale(2);
-       // this.cameras.main.setBounds(0, 0, map.displayWidth, map.displayHeight).setZoom(1);
-        var keyX = Phaser.Math.Between(0, 400);
-        var keyY = Phaser.Math.Between(0, 300);
-        var key = this.add.image(keyX, keyY, "key").setScale(0.3);
-        key.setInteractive();
-        // this.input.on('pointerdown', this.startDrag, this);
+        this.cameras.main.setBounds(0, 0, game.width, game.height);
+        
+        let keys = this.physics.add.group({
+            key: 'key',
+            repeat: 5,
 
-        this.input.setDraggable(key); //https://phaser.io/examples/v3/view/game-objects/container/draggable-container
+        });
+
+        let len = 0;
+        keys.children.iterate(function (child) {
+            child.x = Phaser.Math.RND.between(0, 800);
+            child.y = Phaser.Math.RND.between(30, 600);
+            child.setInteractive({ draggable: true });
+            child.setScale(0.15);
+            len++;
+
+        });
+ 
+        for (let i = 0; i < len; i++) {  
+            keys.children.entries[i].setTint(colours[i]); 
+        }
 
         this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
 
@@ -28,12 +42,28 @@ class Drag extends Phaser.Scene {
     
         });
 
+
         //TODO add check to make sure key + lock don't spawn in the same spot
-        var lockX = Phaser.Math.Between(0, game.width);
-        var lockY = Phaser.Math.Between(0, game.height);
-        var lock = this.add.image(keyX, keyY, "lock").setScale(0.1);
 
+        let locks = this.physics.add.group({
+            key: 'lock',
+            repeat: 5,
 
+        });
+
+        len = 0;
+        locks.children.iterate(function (child) {
+            child.x = Phaser.Math.RND.between(0, 800);
+            child.y = Phaser.Math.RND.between(0, 600);
+            child.setScale(0.08);
+            len++;
+        });
+ 
+        for (let i = 0; i < len; i++) {  
+            locks.children.entries[i].setTint(colours[i]); 
+        }
+
+        this.physics.add.overlap(keys, locks, tryLock, null, this);
     }
 
     update() {
@@ -42,22 +72,9 @@ class Drag extends Phaser.Scene {
 }
 export default Drag;
 
-
-function startDrag(pointer, targets) {
-    this.input.off('pointerdown', this.startDrag, this);
-    this.dragObj = targets[0];
-    this.input.on('pointermove', this.doDrag, this);
-    this.input.on('pointerup', this.stopDrag, this);
-}
-
-function doDrag(pointer) {
-    if (typeof this.dragObj !== "undefined") {
-        this.dragObj.x = pointer.x;
-        this.dragObj.y = pointer.y;
+function tryLock(key,lock){
+    if (key.tintTopLeft === lock.tintTopLeft){
+        key.disableBody(true,true);
+        lock.disableBody(true,true);
     }
-}
-function stopDrag() {
-    this.input.on('pointerdown', this.startDrag, this);
-    this.input.off('pointermove', this.doDrag, this);
-    this.input.off('pointerup', this.stopDrag, this);
 }
