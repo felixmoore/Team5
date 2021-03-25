@@ -5,20 +5,34 @@ class Drag extends Phaser.Scene {
 
     }
     preload() {
-        this.load.image('key', 'public/assets/key.png');
-        this.load.image('lock', 'public/assets/lock.png');
+        this.load.image('key', 'public/assets/key.png'); //TODO needs source in readme.md
+        this.load.image('lock', 'public/assets/lock.png'); //TODO needs source in readme.md
+        this.load.image('background', 'public/assets/background2.jpg'); //TODO needs source in readme.md
     }
 
     create() {
-        var keyX = Phaser.Math.Between(0, game.width);
-        var keyY = Phaser.Math.Between(0, game.height);
-        var key = this.add.image(keyX, keyY, "key");
+        this.add.image(400, 300, 'background').setScale(2);
+       // this.cameras.main.setBounds(0, 0, map.displayWidth, map.displayHeight).setZoom(1);
+        var keyX = Phaser.Math.Between(0, 400);
+        var keyY = Phaser.Math.Between(0, 300);
+        var key = this.add.image(keyX, keyY, "key").setScale(0.3);
         key.setInteractive();
-        this.input.on('pointerdown', this.startDrag, this);
+        // this.input.on('pointerdown', this.startDrag, this);
 
+        this.input.setDraggable(key); //https://phaser.io/examples/v3/view/game-objects/container/draggable-container
+
+        this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+
+            gameObject.x = dragX;
+            gameObject.y = dragY;
+    
+        });
+
+        //TODO add check to make sure key + lock don't spawn in the same spot
         var lockX = Phaser.Math.Between(0, game.width);
         var lockY = Phaser.Math.Between(0, game.height);
-        var lock = this.add.image(keyX, keyY, "lock");
+        var lock = this.add.image(keyX, keyY, "lock").setScale(0.1);
+
 
     }
 
