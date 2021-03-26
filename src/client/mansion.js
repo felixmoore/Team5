@@ -1,29 +1,28 @@
+/* eslint-disable no-undef, no-unused-vars */
 let player;
 let cursors;
 let nameChanged = false;
-let data = {};
-let objects = {};
+const data = {};
+const objects = {};
 let allPlayers = {};
-let time = 0;
+const time = 0;
 let cluesCollected = 0;
 let timerText;
 let bgm;
-let clue_collect;
+let clueCollect;
 
-function setName(newName) {
+function setName (newName) {
   data.username = newName;
   nameChanged = true;
 }
 class Mansion extends Phaser.Scene {
-  constructor() {
-
+  constructor () {
     super({
       key: 'mansion'
     });
-
   }
 
-  preload() {
+  preload () {
     this.load.image('button_a', 'public/assets/button_a.png');
     this.load.image('button_b', 'public/assets/button_b.png');
     this.load.image('clue_bone', 'public/assets/clues/bone01a.png');
@@ -31,70 +30,68 @@ class Mansion extends Phaser.Scene {
     this.load.image('clue_knife', 'public/assets/clues/sword_03c.png');
     this.load.image('clue_poison', 'public/assets/clues/potion_01a.png');
 
-    this.load.image("generic", "public/assets/tilesets/1_Generic_48x48.png");
-    this.load.image("living_room", "public/assets/tilesets/2_LivingRoom_48x48.png");
-    this.load.image("bathroom", "public/assets/tilesets/3_Bathroom_48x48.png");
-    this.load.image("bedroom", "public/assets/tilesets/4_Bedroom_48x48.png");
-    this.load.image("library", "public/assets/tilesets/5_Classroom_and_library_48x48.png");
-    this.load.image("kitchen", "public/assets/tilesets/12_Kitchen_48x48.png");
-    this.load.image("stairs_railings", "public/assets/tilesets/17_Visibile_Upstairs_System_48x48.png");
-    this.load.image("walls_floors", "public/assets/tilesets/Tilesets_48x48.png");
+    this.load.image('generic', 'public/assets/tilesets/1_Generic_48x48.png');
+    this.load.image('living_room', 'public/assets/tilesets/2_LivingRoom_48x48.png');
+    this.load.image('bathroom', 'public/assets/tilesets/3_Bathroom_48x48.png');
+    this.load.image('bedroom', 'public/assets/tilesets/4_Bedroom_48x48.png');
+    this.load.image('library', 'public/assets/tilesets/5_Classroom_and_library_48x48.png');
+    this.load.image('kitchen', 'public/assets/tilesets/12_Kitchen_48x48.png');
+    this.load.image('stairs_railings', 'public/assets/tilesets/17_Visibile_Upstairs_System_48x48.png');
+    this.load.image('walls_floors', 'public/assets/tilesets/Tilesets_48x48.png');
 
-    this.load.tilemapTiledJSON("map", "public/assets/tilesets/map.json");
+    this.load.tilemapTiledJSON('map', 'public/assets/tilesets/map.json');
     this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', {
       frameWidth: 32,
       frameHeight: 32
     });
-    this.load.audio('clue_collect', 'public/assets/sound/Fruit collect 1.wav');
-    this.load.audio('bgm', 'public/assets/sound/Ludum Dare 38 - Track 6.wav'); //TODO can be replaced, just found some random royalty free music
-
+    this.load.audio('clueCollect', 'public/assets/sound/Fruit collect 1.wav');
+    this.load.audio('bgm', 'public/assets/sound/Ludum Dare 38 - Track 6.wav'); // TODO can be replaced, just found some random royalty free music
   }
 
-  create() {
+  create () {
     const self = this; // avoids confusion with 'this' object when scope changes
     this.socket = io(); // Socket.io connection
     this.otherPlayers = this.physics.add.group();
     this.localState = {};
     const map = this.make.tilemap({
-      key: "map"
+      key: 'map'
     });
 
-    const generic_tileset = map.addTilesetImage("generic", "generic");
-    const living_room_tileset = map.addTilesetImage("living_room", "living_room");
-    const bathroom_tileset = map.addTilesetImage("bathroom", "bathroom");
-    const bedroom_tileset = map.addTilesetImage("bedroom", "bedroom");
-    const library_tileset = map.addTilesetImage("library", "library");
-    const kitchen_tileset = map.addTilesetImage("kitchen", "kitchen");
-    const stairs_railings_tileset = map.addTilesetImage("stairs_railings", "stairs_railings");
-    const walls_floors_tileset = map.addTilesetImage("walls_floors", "walls_floors");
+    const genericTileset = map.addTilesetImage('generic', 'generic');
+    const livingRoomTileset = map.addTilesetImage('living_room', 'living_room');
+    const bathroomTileset = map.addTilesetImage('bathroom', 'bathroom');
+    const bedroomTileset = map.addTilesetImage('bedroom', 'bedroom');
+    const libraryTileset = map.addTilesetImage('library', 'library');
+    const kitchenTileset = map.addTilesetImage('kitchen', 'kitchen');
+    const stairsRailingsTileset = map.addTilesetImage('stairs_railings', 'stairs_railings');
+    const wallsFloorsTileset = map.addTilesetImage('walls_floors', 'walls_floors');
 
-    const allTilesets = [generic_tileset, living_room_tileset, bathroom_tileset, bedroom_tileset, library_tileset,
-      kitchen_tileset, stairs_railings_tileset, walls_floors_tileset]; 
+    const allTilesets = [genericTileset, livingRoomTileset, bathroomTileset, bedroomTileset, libraryTileset,
+      kitchenTileset, stairsRailingsTileset, wallsFloorsTileset];
 
-    const belowLayer = map.createLayer("Below Player", allTilesets, 0, 0).setCollisionByProperty({
+    const belowLayer = map.createLayer('Below Player', allTilesets, 0, 0).setCollisionByProperty({
       collides: true
     });
-    const stairsLayer = map.createLayer("Stairs & Rugs", allTilesets, 0, 0).setCollisionByProperty({
+    const stairsLayer = map.createLayer('Stairs & Rugs', allTilesets, 0, 0).setCollisionByProperty({
       collides: true
     });
-    const worldLayer = map.createLayer("World", allTilesets, 0, 0).setCollisionByProperty({
+    const worldLayer = map.createLayer('World', allTilesets, 0, 0).setCollisionByProperty({
       collides: true
     });
-    const decorationLowerLayer = map.createLayer("Decoration Lower", allTilesets, 0, 0).setCollisionByProperty({
+    const decorationLowerLayer = map.createLayer('Decoration Lower', allTilesets, 0, 0).setCollisionByProperty({
       collides: true
     });
-    const decorationUpperLayer = map.createLayer("Decoration Upper", allTilesets, 0, 0).setCollisionByProperty({
+    const decorationUpperLayer = map.createLayer('Decoration Upper', allTilesets, 0, 0).setCollisionByProperty({
       collides: true
     });
-    const aboveLayer = map.createLayer("Above Player", allTilesets, 0, 0);
+    const aboveLayer = map.createLayer('Above Player', allTilesets, 0, 0);
 
     aboveLayer.setDepth(10);
 
     this.physics.world.bounds.width = map.displayWidth;
     this.physics.world.bounds.height = map.displayHeight;
 
-    this.cameras.main.setBounds(0, 0, map.displayWidth, map.displayHeight); 
-
+    this.cameras.main.setBounds(0, 0, map.displayWidth, map.displayHeight);
 
     game.keys = this.input.keyboard.addKeys({
       up: 'up',
@@ -103,9 +100,7 @@ class Mansion extends Phaser.Scene {
       right: 'right'
     });
 
-
     this.socket.on('currentPlayers', (players) => { // Loads all currently connected players.
-
       allPlayers = players;
       Object.keys(players).forEach((index) => {
         if (players[index].id === this.socket.id) {
@@ -128,9 +123,8 @@ class Mansion extends Phaser.Scene {
           this.player.setTint(players[index].colour);
 
           createAnims(self, 'cat');
-          this.player.anims.play('stopDown', true); 
+          this.player.anims.play('stopDown', true);
           this.cameras.main.startFollow(this.player);
-
         } else {
           addOtherPlayer(this, players[index]);
         }
@@ -143,8 +137,8 @@ class Mansion extends Phaser.Scene {
     const infoBg = this.add.rectangle(0, 0, map.widthInPixels, 40, 0x008000).setScrollFactor(0);
 
     // Audio initialisation
-    clue_collect = this.sound.add('clue_collect');
-    clue_collect.play();
+    clueCollect = this.sound.add('clueCollect');
+    clueCollect.play();
     bgm = this.sound.add('bgm', {
       volume: 0.5
     });
@@ -168,38 +162,33 @@ class Mansion extends Phaser.Scene {
       // TODO make older messages move off the screen
     });
 
-
     // TODO make this save properly server side
     // jQuery to handle impostor generation for starting the game
     $('#startGame').click(function (e) {
       e.preventDefault();
       socket.emit('gameStarted');
-      var key = Object.keys(allPlayers);
-      let picked = allPlayers[key[key.length * Math.random() << 0]]; // Selecting a random player from those available
+      const key = Object.keys(allPlayers);
+      const picked = allPlayers[key[key.length * Math.random() << 0]]; // Selecting a random player from those available
       socket.emit('impostorGenerated', picked.id);
-      createTimer(self);
     });
 
     // Lets user set their own username
     $('#setUsername').click(function (e) {
-      let newName = $('#nameInput').val();
+      const newName = $('#nameInput').val();
       data.username = newName;
       nameChanged = true;
     });
-
-
   }
 
-  update() {
+  update () {
     if (startGame) {
-
       // Debug way of accessing the minigames
-      //TODO remove !!!
-      let keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);;
+      // TODO remove !!!
+      const keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
       if (keyQ.isDown) {
         this.socket.emit('sceneChanged', 'drag');
       }
-      let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);;
+      const keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
       if (keyW.isDown) {
         this.scene.start('collect');
       }
@@ -207,13 +196,13 @@ class Mansion extends Phaser.Scene {
       // Triggers server-side update of username
       if (nameChanged) {
         this.socket.emit('change_username', data);
-        !nameChanged;
+        nameChanged = false;
       }
 
       if (this.player) { // Ensuring player is loaded properly before trying to move
         if (game.keys.left.isDown) {
           this.player.setVelocityX(-160);
-          this.player.anims.play('left', true); 
+          this.player.anims.play('left', true);
         } else if (game.keys.right.isDown) {
           this.player.setVelocityX(160);
           this.player.anims.play('right', true);
@@ -256,15 +245,13 @@ class Mansion extends Phaser.Scene {
           x: this.player.x,
           y: this.player.y
         };
-
       }
     }
   }
 }
 export default Mansion;
 
-
-function createAnims(self, anim) {
+function createAnims (self, anim) {
   self.anims.create({
     key: 'down',
     frames: self.anims.generateFrameNumbers(anim, {
@@ -340,12 +327,10 @@ function createAnims(self, anim) {
     }],
     frameRate: 20
   });
-
-
 }
 
 // Called to load existing players, or when a new player connects
-function addOtherPlayer(self, playerInfo) {
+function addOtherPlayer (self, playerInfo) {
   if (self.scene.isActive()) {
     const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'cat')
       .setScale(1.5)
@@ -361,7 +346,7 @@ function addOtherPlayer(self, playerInfo) {
 }
 
 // Used for portal teleportation
-function checkCollision(self) {
+function checkCollision (self) {
   const locState = self.localState;
 
   for (const ob in locState) {
@@ -384,9 +369,9 @@ function checkCollision(self) {
 }
 
 // Socket.io server events
-function configureSocketEvents(self, socket) {
+function configureSocketEvents (self, socket) {
   socket.on('drawObjects', (objects) => {
-    drawObjects(self, objects); 
+    drawObjects(self, objects);
   });
   socket.on('newPlayer', (playerInfo) => {
     addNewPlayer(self, playerInfo);
@@ -413,15 +398,15 @@ function configureSocketEvents(self, socket) {
 }
 
 // Drawing clues & portals
-function drawObjects(self, objects) {
-  const clueText = self.add.text(650, 0, 'Clues collected:  ').setScrollFactor(0).setFontFamily('Arial'); 
+function drawObjects (self, objects) {
+  const clueText = self.add.text(650, 0, 'Clues collected:  ').setScrollFactor(0).setFontFamily('Arial');
   Object.keys(objects).forEach(o => {
     const obj = self.physics.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0);
     if (objects[o].linkedTo === undefined) {
       self.physics.add.overlap(self.player, obj, () => {
         self.socket.emit('clueCollected');
         obj.destroy();
-        clue_collect.play();
+        clueCollect.play();
         cluesCollected++;
         clueText.setText('Clues collected: ' + cluesCollected);
       }, null, self);
@@ -435,9 +420,8 @@ function drawObjects(self, objects) {
   });
 }
 
-
 // Add new player to client on connection event.
-function addNewPlayer(self, playerInfo) {
+function addNewPlayer (self, playerInfo) {
   addOtherPlayer(self, playerInfo);
   allPlayers[playerInfo.id] = playerInfo;
 }
@@ -453,7 +437,7 @@ function addNewPlayer(self, playerInfo) {
  *  current player
  *
  */
-function handlePlayerMovement(self, data) {
+function handlePlayerMovement (self, data) {
   self.otherPlayers.getChildren().forEach((otherPlayer) => {
     if (data.id === otherPlayer.id) {
       if (otherPlayer.x > data.x) {
@@ -472,17 +456,18 @@ function handlePlayerMovement(self, data) {
 }
 
 /* Updates player role on HUD - Impostor or Innocent */
-function updateRoles(self, data) {
-  let roleText = self.add.text(0, 0, 'Player role: ').setScrollFactor(0).setFontFamily('Arial');
+function updateRoles (self, data) {
+  const roleText = self.add.text(0, 0, 'Player role: ').setScrollFactor(0).setFontFamily('Arial');
   if (data === self.socket.id) {
     roleText.setText('Player role: Impostor - avoid clues!');
   } else {
     roleText.setText('Player role: Innocent - collect clues!');
   }
+  createTimer(self);
 }
 
 // Remove player from client on disconnection
-function handleDisconnect(self, id) {
+function handleDisconnect (self, id) {
   self.otherPlayers.getChildren().forEach((otherPlayer) => {
     if (id === otherPlayer.id) {
       otherPlayer.destroy();
@@ -490,13 +475,13 @@ function handleDisconnect(self, id) {
   });
 }
 
-function createTimer(self) {
+function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
-  const timerBg = self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
+  self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
   self.initialTime = 90; // in seconds
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
-  let timedEvent = self.time.addEvent({
+  self.time.addEvent({
     delay: 1000,
     callback: onEvent,
     args: [self],
@@ -505,9 +490,9 @@ function createTimer(self) {
   });
 }
 
-function formatTime(seconds) {
+function formatTime (seconds) {
   // Minutes
-  let minutes = Math.floor(seconds / 60);
+  const minutes = Math.floor(seconds / 60);
   // Seconds
   let partInSeconds = seconds % 60;
   // Adds left zeros to seconds
@@ -516,7 +501,7 @@ function formatTime(seconds) {
   return `${minutes}:${partInSeconds}`;
 }
 
-function onEvent(self) {
+function onEvent (self) {
   self.initialTime -= 1; // One second
   self.timerText.setText('Countdown: ' + formatTime(self.initialTime));
 

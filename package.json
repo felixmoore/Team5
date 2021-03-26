@@ -1,5 +1,5 @@
 {
-  "name": "Deception",
+  "name": "deception",
   "version": "1.0.0",
   "description": "A social deduction murder mystery game.",
   "main": "server.js",

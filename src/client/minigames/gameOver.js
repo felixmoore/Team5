@@ -1,17 +1,14 @@
+/* eslint-disable no-undef, no-unused-vars */
 class GameOver extends Phaser.Scene {
-  constructor() {
+  constructor () {
     super({ key: 'gameOver' });
-
   }
 
-  create() {
-
-    this.gameOverLabel = this.add.text(50, 50, "Game Over");
-
+  create () {
+    this.gameOverLabel = this.add.text(50, 50, 'Game Over');
   }
 
-  update() {
-
+  update () {
 
   }
 } export default GameOver;
