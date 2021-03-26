@@ -1,7 +1,12 @@
-
 * {
   box-sizing: border-box;
-  font-family:'Roboto';
+  font-family: 'Roboto';
+}
+
+.a {
+  border-radius: 28px;
+  padding: 8px;
+  background: black;
 }
 
 header {
@@ -10,6 +15,10 @@ header {
   background: #000000;
   color: white;
   font-size: 25px;
+}
+
+body {
+  background-color: #505050;
 }
 
 
@@ -54,11 +63,11 @@ form input[type="text"] {
   flex: 1;
 }
 
-#messages { 
-  list-style-type: none; 
-  margin: 0; 
-  padding: 0; 
-  position: fixed; 
+#messages {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
 }
 
 #nameInputBox {
@@ -73,8 +82,8 @@ form input[type="text"] {
 }
 
 #nameInputBox #startGame {
-  margin-left:auto;  
-  margin-right:5px;
+  margin-left: auto;
+  margin-right: 5px;
   padding: 5px;
 }
 
@@ -84,8 +93,17 @@ form input[type="text"] {
   margin: 1%;
 }
 
-#messages li { padding: 5px 10px; }
-#messages li:nth-child(odd) { background: #eee; }
+#chatBox {
+  background-color: grey;
+}
+
+#messages li {
+  padding: 5px 10px;
+}
+
+#messages li:nth-child(odd) {
+  background: #eee;
+}
 
 footer {
   padding: 5px;
