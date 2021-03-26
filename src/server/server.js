@@ -17,6 +17,8 @@ module.exports.initialiseServer = function (app) {
   let players = {};
   let gameState = {}; //??
   let clues = {};
+  let keyLocations = [];
+        let lockLocations = [];
   function setName (newName) {
     // data.username = newName;
     // nameChanged = true;
@@ -122,6 +124,37 @@ module.exports.initialiseServer = function (app) {
       // or that if it's generated again, the previous impostor's flag is set to false
     });
 
+    socket.on('cursorMovement', (location) =>{
+      io.emit('cursorMoved', [players[socket.id], location]);
+    });
+
+    socket.on('sceneChanged', (scene) =>{
+     
+
+      io.emit('sceneChange', scene);
+    });
+
+    socket.on('dragLoaded', () => { //gross hacky way of doing this
+      if (keyLocations.length == 0){
+      
+        for (let i = 0; i < 5; i++){
+          keyLocations[i] = [(Math.random() * 800), (Math.random() * 600)];
+          lockLocations[i] = [(Math.random() * 800), (Math.random() * 600)];
+        }
+        console.log(keyLocations);
+        io.emit('dragMinigameLocations', keyLocations, lockLocations);
+      }
+        
+    });
+
+    socket.on('keyMoved', (gameObject, originalCoordinates) => { //update key locations in drag & drop minigame
+      io.emit('keyMovement', gameObject, originalCoordinates);
+  
+    });
+
+    socket.on('keyLockMatched', (key,lock) =>{
+      io.emit('keyLockMatch', key,lock);
+    })
     // player disconnected
     socket.on('disconnect', () => {
       console.log('User disconnected: ID', socket.id);

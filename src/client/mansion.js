@@ -190,7 +190,7 @@ class Mansion extends Phaser.Scene {
       //TODO remove
       let keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);;
       if (keyQ.isDown){
-        this.scene.start('drag');
+        this.socket.emit('sceneChanged', 'drag');
       }
       let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);;
       if (keyW.isDown){
@@ -313,7 +313,7 @@ function createAnims(self, anim) {
 }
 
 function addOtherPlayer(self, playerInfo) {
-
+  if (self.scene.isActive()){
   const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'cat')
     .setScale(1.5)
     .setOrigin(0, 0);
@@ -324,6 +324,7 @@ function addOtherPlayer(self, playerInfo) {
   otherPlayer.id = playerInfo.id;
   otherPlayer.room = playerInfo.room;
   self.otherPlayers.add(otherPlayer);
+  }
 }
 
 /**
@@ -366,6 +367,10 @@ function configureSocketEvents(self, socket) {
   socket.on('colourUpdate', (data, colour) => { updateSpriteColour(self, data, colour); });
   socket.on('disconnect', (id) => { handleDisconnect(self, id); });
   socket.on('movement', (other) => { handlePlayerMovementAlternate(self, other); });
+  socket.on('sceneChange', (newScene) => {
+    self.scene.start(newScene, {allPlayers}); 
+    self.scene.pause();
+  });
   /**
    * Updates the local state.
    */
@@ -507,11 +512,15 @@ function onEvent(self) {
 
   if (self.initialTime === 0) {
     if (self.scene.isActive('discussion')) {
-      self.scene.start('voting');
-      self.initialTime = 60;
+      // self.scene.start('voting');
+      // self.initialTime = 60;
+      console.log('tmep');
     } else {
-      self.scene.start('discussion');
-      self.initialTime = 60;
+      // self.scene.start('discussion');
+      // self.initialTime = 60;
+      // self.scene.start('drag', {allPlayers});
+      self.socket.emit('sceneChanged', 'drag');
+        // self.scene.pause();
     }
   }
 }
