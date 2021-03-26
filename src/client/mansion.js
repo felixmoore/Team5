@@ -41,7 +41,7 @@ class Mansion extends Phaser.Scene {
     this.load.tilemapTiledJSON("map", "public/assets/tilesets/map.json");
     this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', { frameWidth: 32, frameHeight: 32 });
     this.load.audio('clue_collect', 'public/assets/sound/Fruit collect 1.wav');
-    this.load.audio('bgm', 'public/assets/sound/Ludum Dare 38 - Track 6.wav');
+    this.load.audio('bgm', 'public/assets/sound/Ludum Dare 38 - Track 6.wav'); //TODO can be replaced, just found some random royalty free music
 
   }
 
@@ -139,7 +139,8 @@ class Mansion extends Phaser.Scene {
     clue_collect.play();
     bgm = this.sound.add('bgm', { volume: 0.5 });
     bgm.setLoop(true);
-    // bgm.play(); //commented out for now to stop it being annoying while debugging
+    bgm.play(); //can be commented out to stop it being annoying while debugging 
+    //TODO settings menu to mute
 
     // TODO move jquery to chat.js?
     // jquery to handle new message & clear chat box
@@ -352,7 +353,7 @@ function checkCollision(self) {
       } else {
         if (current.clues != null) { // clue collision 
           self.collectClue();
-          clue_collect.play();
+          // clue_collect.play();
           // self.game.state.load('wordsearch', 'src/client/minigames/wordsearch.js') //test line
         }
       }
@@ -387,6 +388,7 @@ function drawObjects(self, objects) {
       self.physics.add.overlap(self.player, obj, () => {
         self.socket.emit('clueCollected');
         obj.destroy();
+        clue_collect.play();
         cluesCollected++;
         clueText.setText('Clues collected: ' + cluesCollected);
       }, null, self);
@@ -522,15 +524,12 @@ function onEvent(self) {
 
   if (self.initialTime === 0) {
     if (self.scene.isActive('discussion')) {
-      // self.scene.start('voting');
-      // self.initialTime = 60;
-      console.log('tmep');
+      self.socket.emit('sceneChanged', 'voting');
+      self.initialTime = 60;
     } else {
-      // self.scene.start('discussion');
-      // self.initialTime = 60;
-      // self.scene.start('drag', {allPlayers});
-      self.socket.emit('sceneChanged', 'drag');
-        // self.scene.pause();
+      self.initialTime = 60;
+      // self.scene.start('drag', {allPlayers}); //used for testing
+      self.socket.emit('sceneChanged', 'discussion');
     }
   }
 }
