@@ -1,12 +1,14 @@
 /**
-* MVP
-* Uses [Node.js]{@link https://nodejs.org/en/} , [Express.js]{@link https://expressjs.com/} and [Socket.io]{@link https://socket.io/}.
-* Initial setup from [this tutorial]{@link https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/} & https://socket.io/get-started/chat.
-* TODO: add seperate rooms https://socket.io/docs/rooms/#Sample-use-cases
-* @author Felix Moore, James Kerr
-*/
+ * MVP
+ * Uses [Node.js]{@link https://nodejs.org/en/} , [Express.js]{@link https://expressjs.com/} and [Socket.io]{@link https://socket.io/}.
+ * Initial setup from [this tutorial]{@link https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/} & https://socket.io/get-started/chat.
+ * TODO: add seperate rooms https://socket.io/docs/rooms/#Sample-use-cases
+ * @author Felix Moore, James Kerr
+ */
 
-const { deflateRawSync } = require('zlib');
+ const {
+  deflateRawSync
+} = require('zlib');
 
 module.exports.initialiseServer = function (app) {
   // const port = process.env.PORT; // uncomment before push
@@ -18,8 +20,10 @@ module.exports.initialiseServer = function (app) {
   let gameState = {}; //??
   let clues = {};
   let keyLocations = [];
-        let lockLocations = [];
-  function setName (newName) {
+  let lockLocations = [];
+  let gameStarted = false;
+
+  function setName(newName) {
     // data.username = newName;
     // nameChanged = true;
     socket.broadcast.emit('change_username', (newName))
@@ -29,22 +33,22 @@ module.exports.initialiseServer = function (app) {
     socket.join('lobby');
     socket.username = 'Anonymous' + socket.id;
 
-    
+    // Updates username server-side
     socket.on('change_username', (data) => {
       socket.username = data.username;
       players[socket.id].username = socket.username;
-
     });
 
-    // create new player
+    // Create new player object on new connection
     players[socket.id] = {
       width: 40,
       height: 40,
-      // places new player at random location in the living room
+      // Places new player at random location in the living room
       x: Math.floor((Math.random() * 768) + 48),
       y: Math.floor((Math.random() * 336) + 1452),
       id: socket.id,
-      // generate random colour, taken from [here]{@link https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508}
+      // Generate random colour to tint sprite
+      // Taken from https://stackoverflow.com/questions/1152024/best-way-to-generate-a-random-color-in-javascript/1152508#comment971373_1152508
       colour: ('0x' + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6)),
       room: 'lobby',
       username: socket.username,
@@ -52,7 +56,7 @@ module.exports.initialiseServer = function (app) {
     };
 
     /**
-     * These objects will eventually be from classes
+     * Creates portal objects
      */
     gameState.objects = {};
 
@@ -74,30 +78,30 @@ module.exports.initialiseServer = function (app) {
     };
 
     /**
-     * Draw object layer first.
-    */
+     * Draws object layer first.
+     */
     socket.emit('drawObjects', gameState.objects);
 
-    // load all current players
+    // Loads all current players
     socket.emit('currentPlayers', players);
-    // notify other players
-
+    
+    // Notify other sockets of a new connection
     socket.broadcast.emit('newPlayer', players[socket.id]);
 
+    // Handles local movement, broadcasts it server-side
     socket.on('playerMovement', (data) => {
       players[socket.id].x = data.x;
       players[socket.id].y = data.y;
-
       socket.broadcast.emit('playerMoved', players[socket.id]);
     });
 
-    socket.on('colourUpdated', (data, colour) => {
-      players[data].colour = colour;
-    });
-
+    // Triggers clue generation when 'Start game' button is pressed
     socket.on('gameStarted', () => {
+      //if (!gameStarted){ //TODO once win/lose conditions are implemented, uncomment this check to avoid multiple 'start game' triggers
       generateClues(gameState);
       io.emit('drawObjects', gameState.objects);
+      //gameStarted = true;
+      //}
     });
 
     // New chat message event
@@ -118,44 +122,48 @@ module.exports.initialiseServer = function (app) {
     });
 
     socket.on('impostorGenerated', (picked) => {
-      io.emit('colourUpdate', picked, 0xFF0000); // turns the impostor red - just to demonstrate for now
+      
       players[picked].impostor = true;
+      io.emit('rolesUpdate', picked);
       // TODO make sure impostor can either only be generated once
       // or that if it's generated again, the previous impostor's flag is set to false
     });
 
-    socket.on('cursorMovement', (location) =>{
+    // Emits cursor movement - used for minigames //TODO
+    socket.on('cursorMovement', (location) => {
       io.emit('cursorMoved', [players[socket.id], location]);
     });
 
-    socket.on('sceneChanged', (scene) =>{
-     
-
+    // Ensures all players view the same scene
+    socket.on('sceneChanged', (scene) => {
       io.emit('sceneChange', scene);
     });
 
-    socket.on('dragLoaded', () => { //gross hacky way of doing this
-      if (keyLocations.length == 0){
-      
-        for (let i = 0; i < 5; i++){
+    // Generates locations for locks & keys in drag & drop minigame
+    socket.on('dragLoaded', () => { 
+      if (keyLocations.length == 0) { // Avoids objects being generated multiple times
+
+        for (let i = 0; i < 5; i++) {
           keyLocations[i] = [(Math.random() * 800), (Math.random() * 600)];
           lockLocations[i] = [(Math.random() * 800), (Math.random() * 600)];
         }
         console.log(keyLocations);
         io.emit('dragMinigameLocations', keyLocations, lockLocations);
       }
-        
+
     });
 
-    socket.on('keyMoved', (gameObject, originalCoordinates) => { //update key locations in drag & drop minigame
+    // Update key locations in drag & drop minigame
+    socket.on('keyMoved', (gameObject, originalCoordinates) => { 
       io.emit('keyMovement', gameObject, originalCoordinates);
-  
     });
 
-    socket.on('keyLockMatched', (key,lock) =>{
-      io.emit('keyLockMatch', key,lock);
-    })
-    // player disconnected
+    // Triggers removal of key/lock objects when matched by a player 
+    socket.on('keyLockMatched', (key, lock) => {
+      io.emit('keyLockMatch', key, lock);
+    });
+
+    // Player disconnected
     socket.on('disconnect', () => {
       console.log('User disconnected: ID', socket.id);
       delete players[socket.id]; // remove player
@@ -164,38 +172,31 @@ module.exports.initialiseServer = function (app) {
   });
 
   /**
-   * Currently sending the state of all objects (only 2 currently)
-   * per transaction.
-   * 
-   * Should it occur this way? Actions on the client should be sent
-   * to the server and the server state updated (consolidate game state
-   * in one location), then client should subscribe to changes in state
-   * and update accordingly. i.e. this is the propogation of the data
-   * back to the 'view'
+   * Sends the state of portal objects to players
    */
   setInterval(() => {
-      io.sockets.emit('sendState', gameState.objects);
+    io.sockets.emit('sendState', gameState.objects);
   }, 1000 / 30); //emit game state 30 times per second
 
   server.listen(process.env.PORT || 3000, () => {
     console.log(`Listening on *: ${process.env.PORT || 3000}`);
   });
 
-  /** To be implemented after MVP demo, not 100% necessary for now. */
-  function createRoomCode() {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let code = '';
-    for (let i = 0; i < 5; i++) {
-      code += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  //TODO check if code already exists in rooms list, recursively generate another code
-  return code;
-  }
+  // /** Generates room code to invite other players */
+  // function createRoomCode() {
+  //   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  //   let code = '';
+  //   for (let i = 0; i < 5; i++) {
+  //     code += characters.charAt(Math.floor(Math.random() * characters.length));
+  //   }
+  //   //TODO check if code already exists in rooms list, recursively generate another code
+  //   return code;
+  // }
 
 }
 
 function generateClues (gameState) {
-  // hardcoded for MVP demo, eventually randomly generated
+  // TODO fix, currently generated out of bounds
   //lounge
   gameState.objects['clue_bone1'] = {
     width: 32,
