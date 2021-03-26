@@ -421,6 +421,16 @@ function addNewPlayer(self, playerInfo) {
 function handlePlayerMovement(self, data) {
   self.otherPlayers.getChildren().forEach((otherPlayer) => {
     if (data.id === otherPlayer.id) {
+        if (otherPlayer.x > data.x){
+          otherPlayer.anims.play('left', true);
+        } else if (otherPlayer.x < data.x){
+          otherPlayer.anims.play('right', true);
+        }
+        if (otherPlayer.y > data.y){
+          otherPlayer.anims.play('up', true);
+        } else if (otherPlayer.y < data.y){
+          otherPlayer.anims.play('down', true);
+        } 
       otherPlayer.setPosition(data.x, data.y);
     }
   });
