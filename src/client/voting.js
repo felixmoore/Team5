@@ -1,4 +1,6 @@
 /* eslint-disable no-undef, no-unused-vars */
+let players;
+
 class Voting extends Phaser.Scene {
   constructor () {
     super({ key: 'voting' });
@@ -14,28 +16,42 @@ class Voting extends Phaser.Scene {
     this.add.text(20, 50, 'Decide on who you think the impostor is...').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     this.socket = io();
     this.socket.emit('votingStart');
+    players = this.physics.add.group();
+    const voted = false;
     this.socket.on('votingData', (data) => {
       console.log(data);
       // draw all sprites + usernames
-      let x = 100;
+      let x = 140;
       let y = 70;
 
       Object.keys(data).forEach((index) => {
-        this.add.sprite(x, y, 'cat').setScale(3).setOrigin(0, 0).setTint(data[index].colour);
+        const player = this.add.sprite(x, y, 'cat').setScale(3).setOrigin(0, 0).setTint(data[index].colour).setInteractive();
         // TODO add a click event & some way of storing a vote
-        this.add.text(x - 50, y + 100, data[index].username).setColor('#ff0000', 0).setFontSize(15);
-        x += 300;
-        if (x >= 450) {
-          x = 100;
-          y += 150;
+        player.label = this.add.text(x - 50, y + 100, data[index].username).setColor('#ffffff', 0).setFontSize(15);
+        player.on('pointerdown', function (pointer) {
+          selectPlayer(player, this);
+        });
+        players.add(player);
+        x += 370;
+        if (x >= 600) {
+          x = 140;
+          y += 120;
         }
       });
     });
 
     // createTimer(this);
-    this.input.once('pointerdown', function () {
-      // this.scene.add('mansionScene', MansionScene, true);
-    }, this);
   }
 }
 export default Voting;
+
+function selectPlayer (player, self) {
+  // Dim all other sprites
+  players.getChildren().forEach((childPlayer) => {
+    childPlayer.alpha = 0.7;
+    childPlayer.label.setColor('#ffffff', 0);
+  });
+  // Highlight selected player
+  player.alpha = 1;
+  player.label.setColor('#ff0000', 0);
+}
