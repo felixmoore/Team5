@@ -112,7 +112,6 @@ class Mansion extends Phaser.Scene {
             .setOffset(0, 24)
             .setVelocity(0);
           this.player.setCollideWorldBounds(true);
-          // this.player.usernameLabel = self.add.text(playerInfo.x, playerInfo.y + 45, playerInfo.username, self.otherPlayers);
           // Adds collisions with each layer of the tile map
           this.physics.add.collider(this.player, stairsLayer);
           this.physics.add.collider(this.player, belowLayer);
@@ -405,18 +404,8 @@ function configureSocketEvents (self, socket) {
       if (data.id === otherPlayer.id) {
         otherPlayer.username = data.username;
         otherPlayer.usernameLabel.setText(data.username);
-        // otherPlayer.destroy();
       }
     });
-    // Object.keys(self.otherPlayers.getChildren()).forEach((player) => {
-    //   console.log(self.otherPlayers.getChildren());
-    //   console.log('player: ' + player);
-    //   if (player.id === data.id) {
-    //     console.log(player);
-    //     const label = player.usernameLabel;
-    //     label.setText(data.username);
-    //   }
-    // });
   });
 }
 
