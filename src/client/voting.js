@@ -11,7 +11,7 @@ class Voting extends Phaser.Scene {
   }
 
   create () {
-    this.cameras.main.backgroundColor.setTo(0);
+    this.cameras.main.backgroundColor.setTo('#282828');
     this.add.text(20, 20, 'Time to vote!').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     this.add.text(20, 50, 'Decide on who you think the impostor is...').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     this.socket = io();

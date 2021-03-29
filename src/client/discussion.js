@@ -6,12 +6,22 @@ class Discussion extends Phaser.Scene {
   }
 
   preload () {
-
+    // this.load.image('clock', 'public/assets/clock2.gif');
+    // this.load.atlas('public/assets/clock2.gif');
+    this.load.spritesheet('clock', 'public/assets/clock.png', { frameWidth: 350, frameHeight: 350 });
   }
 
   create () {
+    this.anims.create({
+      key: 'tick',
+      frameRate: 5,
+      frames: this.anims.generateFrameNumbers('clock', { start: 2, end: 144 }),
+      repeat: -1
+    });
+    const clock = this.add.sprite(400, 300, 'clock');
+    clock.play('tick');
     const mansion = this.scene.get('mansion');
-    this.cameras.main.backgroundColor.setTo(0);
+    this.cameras.main.backgroundColor.setTo('#282828');
     this.add.text(20, 20, 'Time to vote!').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     this.add.text(20, 50, 'Decide on who you think the impostor is...').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     this.add.text(600, 80, 'Discuss -->').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
