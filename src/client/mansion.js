@@ -68,7 +68,8 @@ class Mansion extends Phaser.Scene {
     const wallsFloorsTileset = map.addTilesetImage('walls_floors', 'walls_floors');
 
     const allTilesets = [genericTileset, livingRoomTileset, bathroomTileset, bedroomTileset, libraryTileset,
-      kitchenTileset, stairsRailingsTileset, wallsFloorsTileset];
+      kitchenTileset, stairsRailingsTileset, wallsFloorsTileset
+    ];
 
     const belowLayer = map.createLayer('Below Player', allTilesets, 0, 0).setCollisionByProperty({
       collides: true
@@ -151,9 +152,11 @@ class Mansion extends Phaser.Scene {
     const socket = this.socket;
     $('#chat').submit(function (e) {
       e.preventDefault();
-      socket.emit('newMessage', $('#chatInput').val());
-      $('#chatInput').val('');
-      return true;
+      if ($('#chatInput').val() !== '') {
+        socket.emit('newMessage', $('#chatInput').val());
+        $('#chatInput').val('');
+        return true;
+      }
     });
 
     // Adds message to chat window
@@ -388,7 +391,9 @@ function configureSocketEvents (self, socket) {
     handleDisconnect(self, id);
   });
   socket.on('sceneChange', (newScene) => {
-    self.scene.start(newScene, { allPlayers }); // Triggers Phaser scene change, passes player information to new scene
+    self.scene.start(newScene, {
+      allPlayers
+    }); // Triggers Phaser scene change, passes player information to new scene
     self.scene.pause();
   });
   /**
