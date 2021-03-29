@@ -13,12 +13,6 @@ module.exports.initialiseServer = function (app) {
     socket.join('lobby');
     socket.username = 'Anonymous' + socket.id;
 
-    // Updates username server-side
-    socket.on('change_username', (data) => {
-      socket.username = data.username;
-      players[socket.id].username = socket.username;
-    });
-
     // Create new player object on new connection
     players[socket.id] = {
       width: 40,
@@ -67,6 +61,13 @@ module.exports.initialiseServer = function (app) {
 
     // Notify other sockets of a new connection
     socket.broadcast.emit('newPlayer', players[socket.id]);
+
+    // Updates username server-side
+    socket.on('change_username', (data) => {
+      socket.username = data.username;
+      players[socket.id].username = socket.username;
+      io.emit('usernameChanged', data);
+    });
 
     // Handles local movement, broadcasts it server-side
     socket.on('playerMovement', (data) => {

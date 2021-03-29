@@ -11,10 +11,11 @@ let timerText;
 let bgm;
 let clueCollect;
 
-function setName (newName) {
-  data.username = newName;
-  nameChanged = true;
-}
+// function setName (newName, self) {
+//   data.username = newName;
+
+//   nameChanged = true;
+// }
 class Mansion extends Phaser.Scene {
   constructor () {
     super({
@@ -111,7 +112,7 @@ class Mansion extends Phaser.Scene {
             .setOffset(0, 24)
             .setVelocity(0);
           this.player.setCollideWorldBounds(true);
-
+          // this.player.usernameLabel = self.add.text(playerInfo.x, playerInfo.y + 45, playerInfo.username, self.otherPlayers);
           // Adds collisions with each layer of the tile map
           this.physics.add.collider(this.player, stairsLayer);
           this.physics.add.collider(this.player, belowLayer);
@@ -176,6 +177,7 @@ class Mansion extends Phaser.Scene {
     $('#setUsername').click(function (e) {
       const newName = $('#nameInput').val();
       data.username = newName;
+      data.id = socket.id;
       nameChanged = true;
     });
   }
@@ -340,6 +342,7 @@ function addOtherPlayer (self, playerInfo) {
     otherPlayer.anims.play('stopDown', true);
     otherPlayer.setTint(playerInfo.colour);
     otherPlayer.id = playerInfo.id;
+    otherPlayer.usernameLabel = self.add.text(playerInfo.x, playerInfo.y + 45, playerInfo.username, self.otherPlayers);
     otherPlayer.room = playerInfo.room;
     self.otherPlayers.add(otherPlayer);
   }
@@ -394,6 +397,26 @@ function configureSocketEvents (self, socket) {
    */
   socket.on('sendState', function (state) {
     self.localState = state;
+  });
+
+  // Updates username labels underneath sprites of other players
+  socket.on('usernameChanged', function (data) {
+    self.otherPlayers.getChildren().forEach((otherPlayer) => {
+      if (data.id === otherPlayer.id) {
+        otherPlayer.username = data.username;
+        otherPlayer.usernameLabel.setText(data.username);
+        // otherPlayer.destroy();
+      }
+    });
+    // Object.keys(self.otherPlayers.getChildren()).forEach((player) => {
+    //   console.log(self.otherPlayers.getChildren());
+    //   console.log('player: ' + player);
+    //   if (player.id === data.id) {
+    //     console.log(player);
+    //     const label = player.usernameLabel;
+    //     label.setText(data.username);
+    //   }
+    // });
   });
 }
 
@@ -451,6 +474,7 @@ function handlePlayerMovement (self, data) {
         otherPlayer.anims.play('down', true);
       }
       otherPlayer.setPosition(data.x, data.y);
+      otherPlayer.usernameLabel.setPosition(data.x, data.y + 45);
     }
   });
 }
@@ -470,6 +494,7 @@ function updateRoles (self, data) {
 function handleDisconnect (self, id) {
   self.otherPlayers.getChildren().forEach((otherPlayer) => {
     if (id === otherPlayer.id) {
+      otherPlayer.usernameLabel.destroy();
       otherPlayer.destroy();
     }
   });
