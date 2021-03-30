@@ -10,6 +10,7 @@ let cluesCollected = 0;
 let timerText;
 let bgm;
 let clueCollect;
+let socket;
 
 // function setName (newName, self) {
 //   data.username = newName;
@@ -51,7 +52,7 @@ class Mansion extends Phaser.Scene {
 
   create () {
     const self = this; // avoids confusion with 'this' object when scope changes
-    this.socket = io(); // Socket.io connection
+    socket = io(); // Socket.io connection
     this.otherPlayers = this.physics.add.group();
     this.localState = {};
     const map = this.make.tilemap({
@@ -102,10 +103,10 @@ class Mansion extends Phaser.Scene {
       right: 'right'
     });
 
-    this.socket.on('currentPlayers', (players) => { // Loads all currently connected players.
+    socket.on('currentPlayers', (players) => { // Loads all currently connected players.
       allPlayers = players;
       Object.keys(players).forEach((index) => {
-        if (players[index].id === this.socket.id) {
+        if (players[index].id === socket.id) {
           this.player = this.physics.add
             .sprite(players[index].x, players[index].y, 'cat')
             .setScale(1.5)
@@ -132,7 +133,7 @@ class Mansion extends Phaser.Scene {
       });
     });
 
-    configureSocketEvents(this, this.socket);
+    configureSocketEvents(this, socket);
 
     // HUD for clue/role information
     const infoBg = this.add.rectangle(0, 0, map.widthInPixels, 40, 0x008000).setScrollFactor(0);
@@ -149,7 +150,7 @@ class Mansion extends Phaser.Scene {
 
     // TODO move jQuery to a separate file?
     // jQuery to handle new messages & clear chat box
-    const socket = this.socket;
+
     $('#chat').submit(function (e) {
       e.preventDefault();
       if ($('#chatInput').val() !== '') {
@@ -160,7 +161,7 @@ class Mansion extends Phaser.Scene {
     });
 
     // Adds message to chat window
-    this.socket.on('newMessage', (msg) => {
+    socket.on('newMessage', (msg) => {
       $('#messages').prepend($('<li>').text(msg));
       // TODO make older messages move off the screen
     });
@@ -190,7 +191,7 @@ class Mansion extends Phaser.Scene {
       // TODO remove !!!
       const keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
       if (keyQ.isDown) {
-        this.socket.emit('sceneChanged', 'drag');
+        socket.emit('sceneChanged', 'drag');
       }
       const keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
       if (keyW.isDown) {
@@ -199,7 +200,7 @@ class Mansion extends Phaser.Scene {
 
       // Triggers server-side update of username
       if (nameChanged) {
-        this.socket.emit('change_username', data);
+        socket.emit('change_username', data);
         nameChanged = false;
       }
 
@@ -239,7 +240,7 @@ class Mansion extends Phaser.Scene {
         const y = this.player.y;
 
         if (this.player.previous && (x !== this.player.previous.x || y !== this.player.previous.y)) {
-          this.socket.emit('playerMovement', {
+          socket.emit('playerMovement', {
             x: this.player.x,
             y: this.player.y
           });
@@ -339,7 +340,6 @@ function addOtherPlayer (self, playerInfo) {
     const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'cat')
       .setScale(1.5)
       .setOrigin(0, 0);
-    // .setOffset(0, 24);
     createAnims(self, 'cat');
     otherPlayer.anims.play('stopDown', true);
     otherPlayer.setTint(playerInfo.colour);
@@ -391,9 +391,7 @@ function configureSocketEvents (self, socket) {
     handleDisconnect(self, id);
   });
   socket.on('sceneChange', (newScene) => {
-    self.scene.start(newScene, {
-      allPlayers
-    }); // Triggers Phaser scene change, passes player information to new scene
+    self.scene.start(newScene, { allPlayers }); // Triggers Phaser scene change, passes player information to new scene
     self.scene.pause();
   });
   /**
@@ -421,14 +419,14 @@ function drawObjects (self, objects) {
     const obj = self.physics.add.image(objects[o].x, objects[o].y, objects[o].image).setDisplaySize(objects[o].width, objects[o].height).setOrigin(0, 0);
     if (objects[o].linkedTo === undefined) {
       self.physics.add.overlap(self.player, obj, () => {
-        self.socket.emit('clueCollected');
+        socket.emit('clueCollected');
         obj.destroy();
         clueCollect.play();
         cluesCollected++;
         clueText.setText('Clues collected: ' + cluesCollected);
       }, null, self);
       self.physics.add.overlap(self.otherPlayers, obj, () => {
-        self.socket.emit('clueCollected');
+        socket.emit('clueCollected');
         obj.destroy();
         cluesCollected++;
         clueText.setText('Clues collected: ' + cluesCollected);
@@ -476,7 +474,7 @@ function handlePlayerMovement (self, data) {
 /* Updates player role on HUD - Impostor or Innocent */
 function updateRoles (self, data) {
   const roleText = self.add.text(0, 0, 'Player role: ').setScrollFactor(0).setFontFamily('Arial');
-  if (data === self.socket.id) {
+  if (data === socket.id) {
     roleText.setText('Player role: Impostor - avoid clues!');
   } else {
     roleText.setText('Player role: Innocent - collect clues!');
@@ -497,7 +495,7 @@ function handleDisconnect (self, id) {
 function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 90; // in seconds
+  self.initialTime = 10; // in seconds //TODO change back to 90
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
   self.time.addEvent({
@@ -526,12 +524,13 @@ function onEvent (self) {
 
   if (self.initialTime === 0) {
     if (self.scene.isActive('discussion')) {
-      self.socket.emit('sceneChanged', 'voting');
+      socket.emit('sceneChanged', 'voting');
       self.initialTime = 60;
     } else {
       self.initialTime = 60;
       // self.scene.start('drag', {allPlayers}); //used for testing
-      self.socket.emit('sceneChanged', 'discussion');
+      socket.emit('sceneChanged', 'discussion');
     }
   }
 }
+export { socket };

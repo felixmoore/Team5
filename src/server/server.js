@@ -6,7 +6,9 @@ module.exports.initialiseServer = function (app) {
   const clues = {};
   const keyLocations = [];
   const lockLocations = [];
-  // const gameStarted = false;
+  let votes = {};
+  let voteResult;
+  let gameStarted = false;
 
   io.on('connection', (socket) => { // socket.io detects a connection, output to console.
     console.log('User connected: ID', socket.id);
@@ -78,22 +80,17 @@ module.exports.initialiseServer = function (app) {
 
     // Triggers clue generation when 'Start game' button is pressed
     socket.on('gameStarted', () => {
-      // if (!gameStarted){ //TODO once win/lose conditions are implemented, uncomment this check to avoid multiple 'start game' triggers
-      generateClues(gameState);
-      io.emit('drawObjects', gameState.objects);
-      // gameStarted = true;
-      // }
+      if (!gameStarted) { // Avoids multiple triggers of game start
+        generateClues(gameState);
+        // io.emit('sceneChange', 'mansion');
+        io.emit('drawObjects', gameState.objects);
+        gameStarted = true;
+      }
     });
 
     // New chat message event
     socket.on('newMessage', (msg) => {
       io.emit('newMessage', (socket.username + ': ' + msg));
-    });
-
-    // Voting started
-    socket.on('votingStart', () => {
-      console.log('data sent');
-      io.emit('votingData', (players));
     });
 
     // Fires when clue is collected
@@ -103,10 +100,16 @@ module.exports.initialiseServer = function (app) {
     });
 
     socket.on('impostorGenerated', (picked) => {
-      players[picked].impostor = true;
-      io.emit('rolesUpdate', picked);
-      // TODO make sure impostor can either only be generated once
-      // or that if it's generated again, the previous impostor's flag is set to false
+      let existingImpostor = false;
+      for (const i in players) {
+        if (players[i].impostor === true) {
+          existingImpostor = true;
+        }
+      }
+      if (existingImpostor === false) {
+        players[picked].impostor = true;
+        io.emit('rolesUpdate', picked);
+      }
     });
 
     // Emits cursor movement - used for minigames //TODO
@@ -126,7 +129,6 @@ module.exports.initialiseServer = function (app) {
           keyLocations[i] = [(Math.random() * 800), (Math.random() * 600)];
           lockLocations[i] = [(Math.random() * 800), (Math.random() * 600)];
         }
-        console.log(keyLocations);
         io.emit('dragMinigameLocations', keyLocations, lockLocations);
       }
     });
@@ -139,7 +141,49 @@ module.exports.initialiseServer = function (app) {
     // Triggers removal of key/lock objects when matched by a player
     socket.on('keyLockMatched', (key, lock) => {
       io.emit('keyLockMatch', key, lock);
-      // TODO remove matching key + lock from key/lockLocations arrays
+      for (const i in lockLocations) {
+        if (lockLocations[i][0] === lock.x && lockLocations[i][1] === lock.y) {
+          keyLocations.splice(i, 1);
+          lockLocations.splice(i, 1);
+        }
+      }
+    });
+
+    // Voting started
+    socket.on('votingStart', () => {
+      // TODO some kind of check to only emit data once
+      io.emit('votingData', (players));
+    });
+
+    socket.on('sendVote', (vote, socketID) => {
+      votes[socketID] = vote; // ensures only one vote per player
+    });
+
+    socket.on('votingFinished', () => {
+      let scene = 'lose';
+      const voteArray = [];
+      for (const i in votes) {
+        voteArray.push(votes[i]);
+      }
+      voteResult = voteArray.sort((a, b) =>
+        voteArray.filter(v => v === a).length -
+            voteArray.filter(v => v === b).length
+      ).pop();
+      for (const i in players) {
+        if (players[i].id === voteResult) {
+          if (players[i].impostor === true) {
+            scene = 'win';
+          }
+          voteResult = players[i];
+        }
+      }
+      io.emit('sceneChange', scene);
+      votes = {};
+      gameStarted = false;
+    });
+
+    socket.on('resultSceneLoaded', () => {
+      io.emit('voteResult', voteResult);
     });
 
     // Player disconnected

@@ -1,9 +1,10 @@
 /* eslint-disable no-undef, no-unused-vars */
-import Mansion from '../mansion.js';
+import { socket } from '../mansion.js';
 let allPlayers;
 let keys;
 let locks;
 let score = 0;
+// let socket;
 class Drag extends Phaser.Scene {
   constructor () {
     super({
@@ -12,12 +13,7 @@ class Drag extends Phaser.Scene {
   }
 
   init (data) {
-    console.log('init', data);
-
     allPlayers = data.allPlayers;
-    console.log(allPlayers);
-    // this.imageID = data.id;
-    // this.imageFile = data.image;
   }
 
   preload () {
@@ -28,17 +24,18 @@ class Drag extends Phaser.Scene {
   }
 
   create () {
-    const socket = io();
+    const colours = ['0x8E44AD', '0xffff00', '0x0CFF00', '0x0013FF', '0xFF0061', '0x00FBFF'];
+    this.add.image(400, 300, 'background').setScale(2);
+    this.cameras.main.setBounds(0, 0, game.width, game.height);
 
     this.input.on('pointermove', function (pointer) {
-      // darkSmoke.setPosition(pointer.x, pointer.y);
-      // fire.setPosition(pointer.x, pointer.y);
       socket.emit('cursorMovement', [pointer.x, pointer.y]);
     });
     const playerCursors = this.physics.add.group();
     Object.keys(allPlayers).forEach((index) => {
       if (allPlayers[index].id !== socket.id) {
-        const otherPlayer = this.add.sprite(400, 300, 'cursor').setTint();
+        const otherPlayer = this.add.sprite(400, 300, 'cursor').setScale(0.1).setTint(0xffffff);
+        otherPlayer.usernameLabel = this.add.text(400, 335, allPlayers[index].username, playerCursors);
         otherPlayer.id = allPlayers[index].id;
         playerCursors.add(otherPlayer);
       }
@@ -47,8 +44,8 @@ class Drag extends Phaser.Scene {
     socket.on('cursorMoved', ([player, location]) => {
       playerCursors.getChildren().forEach((otherPlayer) => {
         if (player.id === otherPlayer.id) {
-          //   otherPlayer.setPosition(location[0], location[1]);
-          console.log(location);
+          otherPlayer.setPosition(location[0], location[1]);
+          otherPlayer.usernameLabel.setPosition(location[0], location[1] + 35);
         }
       });
     });
@@ -57,22 +54,15 @@ class Drag extends Phaser.Scene {
       handleDisconnect(this, id);
     });
 
-    const colours = ['0x8E44AD', '0xffff00', '0x0CFF00', '0x0013FF', '0xFF0061', '0x00FBFF'];
-    this.add.image(400, 300, 'background').setScale(2);
-    this.cameras.main.setBounds(0, 0, game.width, game.height);
     const scoreText = this.add.text(20, 0, 'Score:  ').setScrollFactor(0).setFontFamily('Arial').setFontSize(30);
     socket.on('dragMinigameLocations', (keyLocations, lockLocations) => {
-      console.log('key =' + keyLocations);
       keys = this.physics.add.group({
         key: 'key',
         repeat: 5
 
       });
 
-      // let len = 0;
       keys.children.iterate(function (child) {
-        // child.x = Phaser.Math.RND.between(0, 800);
-        // child.y = Phaser.Math.RND.between(30, 600);
         child.setInteractive({
           draggable: true
         });
@@ -96,8 +86,6 @@ class Drag extends Phaser.Scene {
 
       // len = 0;
       locks.children.iterate(function (child) {
-        // child.x = Phaser.Math.RND.between(0, 800);
-        // child.y = Phaser.Math.RND.between(0, 600);
         child.setScale(0.08);
         // len++;
       });
@@ -140,7 +128,6 @@ class Drag extends Phaser.Scene {
     });
 
     socket.on('keyMovement', (gameObject, originalCoordinates) => {
-      console.log('triggered');
       keys.children.iterate(function (childKey) {
         if (childKey.x === originalCoordinates[0] || childKey.y === originalCoordinates[1]) {
           childKey.x = gameObject.x;
