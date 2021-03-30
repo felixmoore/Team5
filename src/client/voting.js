@@ -49,6 +49,13 @@ class Voting extends Phaser.Scene {
     });
 
     createTimer(this);
+    soundToggle = this.add.image(50, 650, 'sound').setScale(0.5);
+    soundToggle
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerup', () => {
+        toggleSound(this);
+      });
   }
 }
 export default Voting;

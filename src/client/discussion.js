@@ -28,6 +28,13 @@ class Discussion extends Phaser.Scene {
     this.add.text(20, 50, 'Decide on who you think the impostor is...').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     this.add.text(600, 80, 'Discuss -->').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     createTimer(this);
+    soundToggle = this.add.image(50, 650, 'sound').setScale(0.5);
+    soundToggle
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerup', () => {
+        toggleSound(this);
+      });
   }
 }
 export default Discussion;

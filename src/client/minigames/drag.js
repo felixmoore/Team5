@@ -103,7 +103,7 @@ class Drag extends Phaser.Scene {
     });
     socket.emit('dragLoaded');
 
-    socket.on('keyLockMatch', (key, lock) => {
+    socket.on('keyLockMatch', (key, lock, dragScore) => {
       if (keys.children !== undefined) {
         keys.children.iterate(function (childKey) {
           if (childKey.x === key.x || childKey.y === key.y) {
@@ -112,7 +112,7 @@ class Drag extends Phaser.Scene {
             locks.children.iterate(function (childLock) {
               if (childLock.x === lock.x && childLock.y === lock.y) {
                 childLock.disableBody(true, true);
-                score++;
+                score = dragScore;
                 scoreText.setText('Score: ' + score);
               }
             });

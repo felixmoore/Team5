@@ -100,6 +100,13 @@ class Collect extends Phaser.Scene {
 
     this.input.on('gameobjectdown', this.destroyClue, this);
     //  this.input.on('gameobjectdown2', score = 30, this.scene.start("playGame"));
+    soundToggle = this.add.image(50, 650, 'sound').setScale(0.5);
+    soundToggle
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerup', () => {
+        toggleSound(this);
+      });
   }
 
   update () {

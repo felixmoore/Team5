@@ -9,6 +9,7 @@ module.exports.initialiseServer = function (app) {
   let votes = {};
   let voteResult;
   let gameStarted = false;
+  let dragScore = 0;
 
   io.on('connection', (socket) => { // socket.io detects a connection, output to console.
     console.log('User connected: ID', socket.id);
@@ -82,7 +83,6 @@ module.exports.initialiseServer = function (app) {
     socket.on('gameStarted', () => {
       if (!gameStarted) { // Avoids multiple triggers of game start
         generateClues(gameState);
-        // io.emit('sceneChange', 'mansion');
         io.emit('drawObjects', gameState.objects);
         gameStarted = true;
       }
@@ -140,7 +140,8 @@ module.exports.initialiseServer = function (app) {
 
     // Triggers removal of key/lock objects when matched by a player
     socket.on('keyLockMatched', (key, lock) => {
-      io.emit('keyLockMatch', key, lock);
+      dragScore++;
+      io.emit('keyLockMatch', key, lock, dragScore);
       for (const i in lockLocations) {
         if (lockLocations[i][0] === lock.x && lockLocations[i][1] === lock.y) {
           keyLocations.splice(i, 1);
