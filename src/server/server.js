@@ -112,7 +112,7 @@ module.exports.initialiseServer = function (app) {
       }
     });
 
-    // Emits cursor movement - used for minigames //TODO
+    // Emits cursor movement - used for minigames
     socket.on('cursorMovement', (location) => {
       io.emit('cursorMoved', [players[socket.id], location]);
     });
@@ -204,17 +204,6 @@ module.exports.initialiseServer = function (app) {
   server.listen(process.env.PORT || 3000, () => {
     console.log(`Listening on *: ${process.env.PORT || 3000}`);
   });
-
-  // /** Generates room code to invite other players */
-  // function createRoomCode() {
-  //   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  //   let code = '';
-  //   for (let i = 0; i < 5; i++) {
-  //     code += characters.charAt(Math.floor(Math.random() * characters.length));
-  //   }
-  //   //TODO check if code already exists in rooms list, recursively generate another code
-  //   return code;
-  // }
 };
 
 function generateClues (gameState) {

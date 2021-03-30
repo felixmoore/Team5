@@ -1,12 +1,9 @@
 /* eslint-disable no-undef, no-unused-vars */
-// import Mansion from './mansion.js';
-import {
-  socket
-} from './mansion.js';
+import { socket } from './mansion.js';
 let players;
-// let allPlayers;
-// let socket;
 let selectedPlayer;
+let soundToggle;
+
 class Voting extends Phaser.Scene {
   constructor () {
     super({
@@ -19,6 +16,8 @@ class Voting extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 32
     });
+    this.load.image('sound', 'public/assets/sound.png');
+    this.load.image('mute', 'public/assets/mute.png');
   }
 
   create () {
@@ -28,14 +27,13 @@ class Voting extends Phaser.Scene {
     socket.emit('votingStart');
     players = this.physics.add.group();
     const voted = false;
-    // draw all sprites + usernames
+    // Draw all sprites & usernames
     socket.on('votingData', (data) => {
       let x = 140;
       let y = 70;
 
       Object.keys(data).forEach((index) => {
         const player = this.add.sprite(x, y, 'cat').setScale(3).setOrigin(0, 0).setTint(data[index].colour).setInteractive();
-        // TODO add a click event & some way of storing a vote
         player.label = this.add.text(x - 50, y + 100, data[index].username).setColor('#ffffff', 0).setFontSize(15);
         player.id = index;
         player.on('pointerdown', function (pointer) {
@@ -70,7 +68,7 @@ function selectPlayer (player) {
 function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   const timerBg = self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 10; // in seconds //TODO change back to 30
+  self.initialTime = 30; // in seconds
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
   const timedEvent = self.time.addEvent({
@@ -104,5 +102,14 @@ function onEvent (self) {
       this.scene.pause();
     });
     socket.emit('votingFinished');
+  }
+}
+function toggleSound (self) {
+  if (!self.game.sound.mute) {
+    self.game.sound.mute = true;
+    soundToggle.setTexture('mute');
+  } else {
+    self.game.sound.mute = false;
+    soundToggle.setTexture('sound');
   }
 }

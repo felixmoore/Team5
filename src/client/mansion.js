@@ -11,6 +11,7 @@ let timerText;
 let bgm;
 let clueCollect;
 let socket;
+let soundToggle;
 
 // function setName (newName, self) {
 //   data.username = newName;
@@ -31,7 +32,8 @@ class Mansion extends Phaser.Scene {
     this.load.image('clue_book', 'public/assets/clues/book_01g.png');
     this.load.image('clue_knife', 'public/assets/clues/sword_03c.png');
     this.load.image('clue_poison', 'public/assets/clues/potion_01a.png');
-
+    this.load.image('sound', 'public/assets/sound.png');
+    this.load.image('mute', 'public/assets/mute.png');
     this.load.image('generic', 'public/assets/tilesets/1_Generic_48x48.png');
     this.load.image('living_room', 'public/assets/tilesets/2_LivingRoom_48x48.png');
     this.load.image('bathroom', 'public/assets/tilesets/3_Bathroom_48x48.png');
@@ -47,7 +49,7 @@ class Mansion extends Phaser.Scene {
       frameHeight: 32
     });
     this.load.audio('clueCollect', 'public/assets/sound/Fruit collect 1.wav');
-    this.load.audio('bgm', 'public/assets/sound/Ludum Dare 38 - Track 6.wav'); // TODO can be replaced, just found some random royalty free music
+    this.load.audio('bgm', 'public/assets/sound/Ludum Dare 38 - Track 6.wav');
   }
 
   create () {
@@ -146,11 +148,16 @@ class Mansion extends Phaser.Scene {
     });
     bgm.setLoop(true);
     bgm.play();
-    // TODO settings menu to mute sounds
 
-    // TODO move jQuery to a separate file?
+    soundToggle = this.add.image(50, 650, 'sound').setScale(0.5);
+    soundToggle
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerup', () => {
+        toggleSound(this);
+      });
+
     // jQuery to handle new messages & clear chat box
-
     $('#chat').submit(function (e) {
       e.preventDefault();
       if ($('#chatInput').val() !== '') {
@@ -166,7 +173,6 @@ class Mansion extends Phaser.Scene {
       // TODO make older messages move off the screen
     });
 
-    // TODO make this save properly server side
     // jQuery to handle impostor generation for starting the game
     $('#startGame').click(function (e) {
       e.preventDefault();
@@ -495,7 +501,7 @@ function handleDisconnect (self, id) {
 function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 10; // in seconds //TODO change back to 90
+  self.initialTime = 90; // in seconds
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
   self.time.addEvent({
@@ -533,4 +539,15 @@ function onEvent (self) {
     }
   }
 }
+
+function toggleSound (self) {
+  if (!self.game.sound.mute) {
+    self.game.sound.mute = true;
+    soundToggle.setTexture('mute');
+  } else {
+    self.game.sound.mute = false;
+    soundToggle.setTexture('sound');
+  }
+}
+
 export { socket };

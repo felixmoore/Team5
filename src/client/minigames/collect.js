@@ -2,6 +2,7 @@
 const timeLimit = 120; // timeLimit for countdown in seconds
 const timeOver = false; // set to false at start
 let timeText;
+let soundToggle;
 
 class Collect extends Phaser.Scene {
   constructor () {
@@ -9,6 +10,8 @@ class Collect extends Phaser.Scene {
   }
 
   preload () {
+    this.load.image('sound', 'public/assets/sound.png');
+    this.load.image('mute', 'public/assets/mute.png');
     this.load.image('background', 'public/assets/Victorian Room V2.jpg');
     this.load.spritesheet('clue', 'public/assets/ship.png', {
       frameWidth: 16,
@@ -198,3 +201,12 @@ class Collect extends Phaser.Scene {
     }
   }
 } export default Collect;
+function toggleSound (self) {
+  if (!self.game.sound.mute) {
+    self.game.sound.mute = true;
+    soundToggle.setTexture('mute');
+  } else {
+    self.game.sound.mute = false;
+    soundToggle.setTexture('sound');
+  }
+}

@@ -1,6 +1,7 @@
-
 /* eslint-disable no-undef, no-unused-vars */
 import { socket } from './mansion.js';
+let soundToggle;
+
 class Discussion extends Phaser.Scene {
   constructor () {
     super({ key: 'discussion' });
@@ -8,6 +9,8 @@ class Discussion extends Phaser.Scene {
 
   preload () {
     this.load.spritesheet('clock', 'public/assets/clock.png', { frameWidth: 350, frameHeight: 350 });
+    this.load.image('sound', 'public/assets/sound.png');
+    this.load.image('mute', 'public/assets/mute.png');
   }
 
   create () {
@@ -25,10 +28,6 @@ class Discussion extends Phaser.Scene {
     this.add.text(20, 50, 'Decide on who you think the impostor is...').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     this.add.text(600, 80, 'Discuss -->').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
     createTimer(this);
-    // this.input.once('pointerdown', function () {
-    //   Object.keys(mansion.getOtherPlayers()).forEach(o => {
-    //   });
-    // }, this);
   }
 }
 export default Discussion;
@@ -36,7 +35,7 @@ export default Discussion;
 function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   const timerBg = self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 5; // in seconds //TODO change back to 30
+  self.initialTime = 30; // in seconds
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
   const timedEvent = self.time.addEvent({ delay: 1000, callback: onEvent, args: [self], callbackScope: self, loop: true });
@@ -59,5 +58,14 @@ function onEvent (self) {
 
   if (self.initialTime === 0) {
     socket.emit('sceneChanged', 'voting');
+  }
+}
+function toggleSound (self) {
+  if (!self.game.sound.mute) {
+    self.game.sound.mute = true;
+    soundToggle.setTexture('mute');
+  } else {
+    self.game.sound.mute = false;
+    soundToggle.setTexture('sound');
   }
 }

@@ -1,5 +1,7 @@
 /* eslint-disable no-undef, no-unused-vars */
 import { socket } from './mansion.js';
+let soundToggle;
+
 class Lose extends Phaser.Scene {
   constructor () {
     super({ key: 'lose' });
@@ -7,6 +9,8 @@ class Lose extends Phaser.Scene {
 
   preload () {
     this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.image('sound', 'public/assets/sound.png');
+    this.load.image('mute', 'public/assets/mute.png');
   }
 
   create () {
@@ -26,3 +30,12 @@ class Lose extends Phaser.Scene {
   }
 }
 export default Lose;
+function toggleSound (self) {
+  if (!self.game.sound.mute) {
+    self.game.sound.mute = true;
+    soundToggle.setTexture('mute');
+  } else {
+    self.game.sound.mute = false;
+    soundToggle.setTexture('sound');
+  }
+}

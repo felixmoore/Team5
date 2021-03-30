@@ -4,6 +4,7 @@ let allPlayers;
 let keys;
 let locks;
 let score = 0;
+let soundToggle;
 // let socket;
 class Drag extends Phaser.Scene {
   constructor () {
@@ -21,6 +22,8 @@ class Drag extends Phaser.Scene {
     this.load.image('lock', 'public/assets/lock.png'); // TODO needs source in readme.md
     this.load.image('background', 'public/assets/background2.jpg'); // TODO needs source in readme.md
     this.load.image('cursor', 'public/assets/cursor.png'); // TODO credit in readme.md https://www.iconfinder.com/icons/7225814/arrow_cursor_icon
+    this.load.image('sound', 'public/assets/sound.png');
+    this.load.image('mute', 'public/assets/mute.png');
   }
 
   create () {
@@ -75,8 +78,6 @@ class Drag extends Phaser.Scene {
         keys.children.entries[i].x = keyLocations[i][0];
         keys.children.entries[i].y = keyLocations[i][1];
       }
-
-      // TODO add check to make sure key + lock don't spawn in the same spot
 
       locks = this.physics.add.group({
         key: 'lock',
@@ -135,6 +136,14 @@ class Drag extends Phaser.Scene {
         }
       });
     });
+
+    soundToggle = this.add.image(50, 650, 'sound').setScale(0.5);
+    soundToggle
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerup', () => {
+        toggleSound(this);
+      });
   }
 
   update () {
@@ -155,4 +164,13 @@ function handleDisconnect (self, id) {
       otherPlayer.destroy();
     }
   });
+}
+function toggleSound (self) {
+  if (!self.game.sound.mute) {
+    self.game.sound.mute = true;
+    soundToggle.setTexture('mute');
+  } else {
+    self.game.sound.mute = false;
+    soundToggle.setTexture('sound');
+  }
 }
