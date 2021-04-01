@@ -18,12 +18,7 @@ class Drag extends Phaser.Scene {
   }
 
   preload () {
-    this.load.image('key', 'public/assets/key.png'); // TODO needs source in readme.md
-    this.load.image('lock', 'public/assets/lock.png'); // TODO needs source in readme.md
-    this.load.image('background', 'public/assets/background2.jpg'); // TODO needs source in readme.md
-    this.load.image('cursor', 'public/assets/cursor.png'); // TODO credit in readme.md https://www.iconfinder.com/icons/7225814/arrow_cursor_icon
-    this.load.image('sound', 'public/assets/sound.png');
-    this.load.image('mute', 'public/assets/mute.png');
+
   }
 
   create () {

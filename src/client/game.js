@@ -4,9 +4,10 @@ import Discussion from './discussion.js';
 import Voting from './voting.js';
 import Drag from './minigames/drag.js';
 import Collect from './minigames/collect.js';
-import GameOver from './minigames/gameOver.js';
+// import GameOver from './minigames/gameOver.js';
 import Win from './win.js';
 import Lose from './lose.js';
+import Preload from './preload.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -29,7 +30,7 @@ const config = {
       }
     }
   },
-  scene: [{ preload, create }, Mansion, Discussion, Voting, Drag, Collect, GameOver, Win, Lose]
+  scene: [{ preload, create }, Preload, Mansion, Discussion, Voting, Drag, Collect, Win, Lose]
 };
 
 const game = new Phaser.Game(config);
@@ -38,5 +39,5 @@ function preload () {
 }
 
 async function create () {
-  this.scene.start('mansion');
+  this.scene.start('preload');
 }

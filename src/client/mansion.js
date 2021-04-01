@@ -26,30 +26,7 @@ class Mansion extends Phaser.Scene {
   }
 
   preload () {
-    this.load.image('button_a', 'public/assets/button_a.png');
-    this.load.image('button_b', 'public/assets/button_b.png');
-    this.load.image('clue_bone', 'public/assets/clues/bone01a.png');
-    this.load.image('clue_book', 'public/assets/clues/book_01g.png');
-    this.load.image('clue_knife', 'public/assets/clues/sword_03c.png');
-    this.load.image('clue_poison', 'public/assets/clues/potion_01a.png');
-    this.load.image('sound', 'public/assets/sound.png');
-    this.load.image('mute', 'public/assets/mute.png');
-    this.load.image('generic', 'public/assets/tilesets/1_Generic_48x48.png');
-    this.load.image('living_room', 'public/assets/tilesets/2_LivingRoom_48x48.png');
-    this.load.image('bathroom', 'public/assets/tilesets/3_Bathroom_48x48.png');
-    this.load.image('bedroom', 'public/assets/tilesets/4_Bedroom_48x48.png');
-    this.load.image('library', 'public/assets/tilesets/5_Classroom_and_library_48x48.png');
-    this.load.image('kitchen', 'public/assets/tilesets/12_Kitchen_48x48.png');
-    this.load.image('stairs_railings', 'public/assets/tilesets/17_Visibile_Upstairs_System_48x48.png');
-    this.load.image('walls_floors', 'public/assets/tilesets/Tilesets_48x48.png');
 
-    this.load.tilemapTiledJSON('map', 'public/assets/tilesets/map.json');
-    this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', {
-      frameWidth: 32,
-      frameHeight: 32
-    });
-    this.load.audio('clueCollect', 'public/assets/sound/Fruit collect 1.wav');
-    this.load.audio('bgm', 'public/assets/sound/Ludum Dare 38 - Track 6.wav');
   }
 
   create () {
@@ -197,11 +174,12 @@ class Mansion extends Phaser.Scene {
       // TODO remove !!!
       const keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
       if (keyQ.isDown) {
-        socket.emit('sceneChanged', 'drag');
+        socket.emit('sceneChanged', 'discussion');
       }
       const keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
       if (keyW.isDown) {
-        this.scene.start('collect');
+        socket.emit('sceneChanged', 'lose');
+        // this.scene.start('collect');
       }
 
       // Triggers server-side update of username
@@ -210,7 +188,7 @@ class Mansion extends Phaser.Scene {
         nameChanged = false;
       }
 
-      if (this.player) { // Ensuring player is loaded properly before trying to move
+      if (this.player && this.player.body) { // Ensuring player is loaded properly before trying to move
         if (game.keys.left.isDown) {
           this.player.setVelocityX(-160);
           this.player.anims.play('left', true);
@@ -397,8 +375,8 @@ function configureSocketEvents (self, socket) {
     handleDisconnect(self, id);
   });
   socket.on('sceneChange', (newScene) => {
-    self.scene.start(newScene, { allPlayers }); // Triggers Phaser scene change, passes player information to new scene
-    self.scene.pause();
+    self.scene.switch(newScene, { allPlayers }); // Triggers Phaser scene change, passes player information to new scene
+    // self.scene.pause();
   });
   /**
    * Updates the local state.
@@ -490,12 +468,16 @@ function updateRoles (self, data) {
 
 // Remove player from client on disconnection
 function handleDisconnect (self, id) {
-  self.otherPlayers.getChildren().forEach((otherPlayer) => {
-    if (id === otherPlayer.id) {
-      otherPlayer.usernameLabel.destroy();
-      otherPlayer.destroy();
-    }
-  });
+  try {
+    self.otherPlayers.getChildren().forEach((otherPlayer) => {
+      if (id === otherPlayer.id) {
+        otherPlayer.usernameLabel.destroy();
+        otherPlayer.destroy();
+      }
+    });
+  } catch {
+    console.log('Player not found!');
+  }
 }
 
 function createTimer (self) {

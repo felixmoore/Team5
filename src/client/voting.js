@@ -12,12 +12,7 @@ class Voting extends Phaser.Scene {
   }
 
   preload () {
-    this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', {
-      frameWidth: 32,
-      frameHeight: 32
-    });
-    this.load.image('sound', 'public/assets/sound.png');
-    this.load.image('mute', 'public/assets/mute.png');
+
   }
 
   create () {
@@ -46,9 +41,9 @@ class Voting extends Phaser.Scene {
           y += 120;
         }
       });
+      createTimer(this);
     });
 
-    createTimer(this);
     soundToggle = this.add.image(50, 650, 'sound').setScale(0.5);
     soundToggle
       .setScrollFactor(0)
@@ -105,8 +100,9 @@ function onEvent (self) {
   if (self.initialTime === 0) {
     socket.emit('sendVote', selectedPlayer, socket.id);
     socket.on('sceneChange', (newScene) => {
-      this.scene.start(newScene); // Triggers Phaser scene change, passes player information to new scene
-      this.scene.pause();
+      this.scene.switch(newScene); // Triggers Phaser scene change
+
+      // this.scene.pause();
     });
     socket.emit('votingFinished');
   }

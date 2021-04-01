@@ -8,9 +8,6 @@ class Win extends Phaser.Scene {
   }
 
   preload () {
-    this.load.spritesheet('cat', 'public/assets/pipo-nekonin001.png', { frameWidth: 32, frameHeight: 32 });
-    this.load.image('sound', 'public/assets/sound.png');
-    this.load.image('mute', 'public/assets/mute.png');
   }
 
   create () {

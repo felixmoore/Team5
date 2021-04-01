@@ -27,3 +27,5 @@ Tileset: https://limezu.itch.io/moderninteriors
 Clue collection sound: "Fruit collect 1.wav" from https://jdwasabi.itch.io/8-bit-16-bit-sound-effects-pack  
 Background music: Ludum Dare 38 - Track 6 - Abstraction (http://www.abstractionmusic.com/)  
 Clock in Discussion scene: http://clipart-library.com/clipart/Aibrd8g8T.htm
+Muted sound icon: https://icons8.com/icon/set/no-audio--v1
+Active sound icon: https://icons8.com/icon/set/audio/undefined/icons/set/high-volume

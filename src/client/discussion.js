@@ -8,16 +8,14 @@ class Discussion extends Phaser.Scene {
   }
 
   preload () {
-    this.load.spritesheet('clock', 'public/assets/clock.png', { frameWidth: 350, frameHeight: 350 });
-    this.load.image('sound', 'public/assets/sound.png');
-    this.load.image('mute', 'public/assets/mute.png');
+
   }
 
   create () {
     this.anims.create({
       key: 'tick',
       frameRate: 5,
-      frames: this.anims.generateFrameNumbers('clock', { start: 2, end: 144 }),
+      frames: this.anims.generateFrameNumbers('clock', { start: 2, end: 143 }),
       repeat: -1
     });
     const clock = this.add.sprite(400, 300, 'clock');
@@ -35,6 +33,13 @@ class Discussion extends Phaser.Scene {
       .on('pointerup', () => {
         toggleSound(this);
       });
+
+
+    socket.on('sceneChange', (newScene) => {
+      this.scene.switch(newScene); // Triggers Phaser scene change
+      createTimer(this);
+    // this.scene.pause();
+    });
   }
 }
 export default Discussion;
