@@ -31,7 +31,7 @@ class Voting extends Phaser.Scene {
         const player = this.add.sprite(x, y, 'cat').setScale(3).setOrigin(0, 0).setTint(data[index].colour).setInteractive();
         player.label = this.add.text(x - 50, y + 100, data[index].username).setColor('#ffffff', 0).setFontSize(15);
         player.id = index;
-        player.on('pointerdown', function (pointer) {
+        player.on('pointerup', () => {
           selectPlayer(player);
         });
         players.add(player);

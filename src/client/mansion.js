@@ -174,7 +174,7 @@ class Mansion extends Phaser.Scene {
       // TODO remove !!!
       const keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
       if (keyQ.isDown) {
-        socket.emit('sceneChanged', 'discussion');
+        socket.emit('sceneChanged', 'voting');
       }
       const keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
       if (keyW.isDown) {
@@ -375,7 +375,7 @@ function configureSocketEvents (self, socket) {
     handleDisconnect(self, id);
   });
   socket.on('sceneChange', (newScene) => {
-    self.scene.switch(newScene, { allPlayers }); // Triggers Phaser scene change, passes player information to new scene
+    self.scene.start(newScene, { allPlayers }); // Triggers Phaser scene change, passes player information to new scene
     // self.scene.pause();
   });
   /**
@@ -391,6 +391,7 @@ function configureSocketEvents (self, socket) {
       if (data.id === otherPlayer.id) {
         otherPlayer.username = data.username;
         otherPlayer.usernameLabel.setText(data.username);
+        allPlayers[data.id].username = data.username;
       }
     });
   });
@@ -483,7 +484,7 @@ function handleDisconnect (self, id) {
 function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 90; // in seconds
+  self.initialTime = 5; // in seconds
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
   self.time.addEvent({
@@ -511,14 +512,7 @@ function onEvent (self) {
   self.timerText.setText('Countdown: ' + formatTime(self.initialTime));
 
   if (self.initialTime === 0) {
-    if (self.scene.isActive('discussion')) {
-      socket.emit('sceneChanged', 'voting');
-      self.initialTime = 60;
-    } else {
-      self.initialTime = 60;
-      // self.scene.start('drag', {allPlayers}); //used for testing
-      socket.emit('sceneChanged', 'discussion');
-    }
+    socket.emit('sceneChanged', 'drag');
   }
 }
 

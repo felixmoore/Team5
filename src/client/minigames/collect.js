@@ -16,38 +16,6 @@ class Collect extends Phaser.Scene {
   }
 
   preload () {
-    this.load.image('background', 'public/assets/Victorian Room V2.jpg');
-    this.load.image('sound', 'public/assets/sound.png');
-    this.load.image('mute', 'public/assets/mute.png');
-    this.load.spritesheet('clue', 'public/assets/ship.png', {
-      frameWidth: 16,
-      frameHeight: 16
-
-    });
-
-    this.load.spritesheet('clue1', 'public/assets/ship.png', {
-      frameWidth: 16,
-      frameHeight: 16
-
-    });
-
-    this.load.spritesheet('clue2', 'public/assets/ship.png', {
-      frameWidth: 16,
-      frameHeight: 16
-
-    });
-
-    this.load.spritesheet('bomb', 'public/assets/bomb.png', {
-      frameWidth: 48,
-      frameHeight: 48
-    });
-
-    this.load.spritesheet('explosion', 'public/assets/explosion.png', {
-      frameWidth: 16,
-      frameHeight: 16
-    });
-
-    this.load.audio('audio_chime', 'public/assets/chime.mp3');
   }
 
   create () {
@@ -69,7 +37,7 @@ class Collect extends Phaser.Scene {
     this.chimeSound = this.sound.add('audio_chime');
 
     this.score = 0;
-    this.scoreLabel = this.add.text(15, 15, 'Score ');
+    this.scoreLabel = this.add.text(15, 15, 'Score ').setScrollFactor(0).setFontFamily('Arial').setFontSize(30);
 
     this.anims.create({
       key: 'clue_anim',
@@ -168,6 +136,10 @@ class Collect extends Phaser.Scene {
       .on('pointerup', () => {
         toggleSound(this);
       });
+
+    socket.on('sceneChange', (newScene) => {
+      this.scene.switch(newScene); // Triggers Phaser scene change
+    });
   }
 
   update () {
@@ -175,23 +147,8 @@ class Collect extends Phaser.Scene {
     this.moveClue(this.clue1, 2);
     this.moveClue(this.clue2, 2.5);
     this.moveBomb(this.bomb, 1);
-    if (this.score >= 100 || this.score < 0) {
-      // this.gameOver();
-      this.physics.pause();
-      if (this.score >= 100) {
-        this.add.text(400, 300, 'You won! :)');
-      }
-
-      if (this.score < 0) {
-        this.add.text(400, 300, 'You lost! :(');
-      }
-
-      setTimeout(() => {
-        console.log('sent');
-        socket.emit('sceneChanged', 'discussion');
-        this.scene.switch('discussion');
-        // this.scene.remove();
-      }, 4000);
+    if (this.score >= 500 || this.score < 0) {
+      socket.emit('finishedCollect');
     }
   }
 
@@ -293,6 +250,5 @@ function toggleSound (self) {
 }
 
 function onEvent () {
-  console.log('sent');
   socket.emit('sceneChanged', 'discussion');
 }

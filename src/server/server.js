@@ -150,6 +150,11 @@ module.exports.initialiseServer = function (app) {
       }
     });
 
+    // Player completed collection minigame
+    socket.once('finishedCollect', () => {
+      io.emit('sceneChange', 'discussion');
+    });
+
     // Voting started
     socket.on('votingStart', () => {
       // TODO some kind of check to only emit data once
@@ -206,65 +211,59 @@ module.exports.initialiseServer = function (app) {
     console.log(`Listening on *: ${process.env.PORT || 3000}`);
   });
 };
-
+function getRandom (min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
 function generateClues (gameState) {
   // TODO fix, currently generated out of bounds
   // lounge
   gameState.objects.clue_bone1 = {
     width: 32,
     height: 32,
-    x: Math.floor((Math.random() * 1180) + 20),
-    y: Math.floor((Math.random() * 445) + 1200),
-    image: 'clue_bone'
-  };
-
-  // kitchen
-  gameState.objects.clue_bone2 = {
-    width: 32,
-    height: 32,
-    x: Math.floor((Math.random() * 1149) + 1915),
-    y: Math.floor((Math.random() * 374) + 1271),
+    x: getRandom(48, 816),
+    y: getRandom(1452, 1788),
     image: 'clue_bone'
   };
 
   gameState.objects.clue_knife1 = {
     width: 32,
     height: 32,
-    x: Math.floor((Math.random() * 1180) + 20),
-    y: Math.floor((Math.random() * 445) + 1200),
+    x: getRandom(48, 816),
+    y: getRandom(1652, 1788),
     image: 'clue_knife'
+  };
+
+  // kitchen
+  gameState.objects.clue_bone2 = {
+    width: 32,
+    height: 32,
+    x: getRandom(1296, 2018),
+    y: getRandom(1523, 1788),
+    image: 'clue_bone'
   };
 
   gameState.objects.clue_knife2 = {
     width: 32,
     height: 32,
-    x: Math.floor((Math.random() * 1149) + 1915),
-    y: Math.floor((Math.random() * 374) + 1271),
+    x: getRandom(1296, 2018),
+    y: getRandom(1523, 1788),
     image: 'clue_knife'
   };
 
+  // bedroom
   gameState.objects.clue_book1 = {
     width: 32,
     height: 32,
-    x: Math.floor((Math.random() * 1180) + 20),
-    y: Math.floor((Math.random() * 445) + 1200),
-    image: 'clue_book'
-  };
-
-  // bedroom
-  gameState.objects.clue_book2 = {
-    width: 32,
-    height: 32,
-    x: Math.floor((Math.random() * 1168) + 1915),
-    y: Math.floor((Math.random() * 461) + 336),
+    x: getRandom(1296, 1776),
+    y: getRandom(425, 636),
     image: 'clue_book'
   };
 
   gameState.objects.clue_poison1 = {
     width: 32,
     height: 32,
-    x: Math.floor((Math.random() * 1168) + 1915),
-    y: Math.floor((Math.random() * 461) + 336),
+    x: getRandom(1296, 1776),
+    y: getRandom(425, 636),
     image: 'clue_poison'
   };
 
@@ -272,8 +271,16 @@ function generateClues (gameState) {
   gameState.objects.clue_poison1 = {
     width: 32,
     height: 32,
-    x: Math.floor((Math.random() * 1197) + 65),
-    y: Math.floor((Math.random() * 485) + 424),
+    x: getRandom(48, 799),
+    y: getRandom(460, 636),
     image: 'clue_poison'
+  };
+
+  gameState.objects.clue_book2 = {
+    width: 32,
+    height: 32,
+    x: getRandom(48, 799),
+    y: getRandom(460, 636),
+    image: 'clue_book'
   };
 }

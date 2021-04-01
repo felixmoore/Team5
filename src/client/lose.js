@@ -24,6 +24,7 @@ class Lose extends Phaser.Scene {
         const player = this.add.sprite(x, y, 'cat').setScale(3).setOrigin(0, 0).setTint(voteResult.colour).setInteractive();
         this.add.text(x, y + 100, voteResult.username).setColor('#ffffff', 0).setFontSize(15);
         this.add.text(this.cameras.main.width / 2 - 200, 250, 'Your deduction was wrong, \nthis player was not the impostor!').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
+        this.scene.pause();
       } else {
         this.add.text(this.cameras.main.width / 2 - 200, 100, 'Nobody! You lose.').setColor('#ff0000', 0).setFontSize(30).setFontFamily('Arial');
       }
