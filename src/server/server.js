@@ -157,8 +157,7 @@ module.exports.initialiseServer = function (app) {
 
     // Voting started
     socket.on('votingStart', () => {
-      // TODO some kind of check to only emit data once
-      io.emit('votingData', (players));
+      io.to(socket.id).emit('votingData', (players));
     });
 
     socket.on('sendVote', (vote, socketID) => {
