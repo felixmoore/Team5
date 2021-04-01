@@ -34,10 +34,9 @@ class Discussion extends Phaser.Scene {
         toggleSound(this);
       });
 
-
     socket.on('sceneChange', (newScene) => {
       this.scene.switch(newScene); // Triggers Phaser scene change
-      createTimer(this);
+      // createTimer(this);
     // this.scene.pause();
     });
   }
