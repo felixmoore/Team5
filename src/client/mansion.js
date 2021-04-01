@@ -174,7 +174,7 @@ class Mansion extends Phaser.Scene {
       // TODO remove !!!
       const keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
       if (keyQ.isDown) {
-        socket.emit('sceneChanged', 'voting');
+        socket.emit('sceneChanged', 'drag');
       }
       const keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
       if (keyW.isDown) {

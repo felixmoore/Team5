@@ -23,7 +23,7 @@ class Voting extends Phaser.Scene {
     players = this.physics.add.group();
     const voted = false;
     // Draw all sprites & usernames
-    socket.on('votingData', (data) => {
+    socket.once('votingData', (data) => {
       let x = 140;
       let y = 70;
 
@@ -69,7 +69,7 @@ function selectPlayer (player) {
 function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   const timerBg = self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 30; // in seconds
+  self.initialTime = 60; // in seconds
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
   const timedEvent = self.time.addEvent({

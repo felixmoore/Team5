@@ -36,6 +36,7 @@ class Discussion extends Phaser.Scene {
 
     socket.on('sceneChange', (newScene) => {
       this.scene.switch(newScene); // Triggers Phaser scene change
+      // console.log('switch to voting');
       // createTimer(this);
     // this.scene.pause();
     });
@@ -46,7 +47,7 @@ export default Discussion;
 function createTimer (self) {
   /* Taken from https://phaser.discourse.group/t/countdown-timer/2471/4 */
   const timerBg = self.add.rectangle(700, 680, 200, 50, 0x008000).setScrollFactor(0);
-  self.initialTime = 30; // in seconds
+  self.initialTime = 60; // in seconds
   self.timerText = self.add.text(630, 670, 'Countdown: ' + formatTime(self.initialTime)).setScrollFactor(0).setFontFamily('Arial');
   // Each 1000 ms call onEvent
   const timedEvent = self.time.addEvent({ delay: 1000, callback: onEvent, args: [self], callbackScope: self, loop: true });
@@ -69,6 +70,7 @@ function onEvent (self) {
 
   if (self.initialTime === 0) {
     socket.emit('sceneChanged', 'voting');
+    // console.log('switch triggered');
   }
 }
 function toggleSound (self) {

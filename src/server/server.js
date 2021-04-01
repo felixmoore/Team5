@@ -120,6 +120,7 @@ module.exports.initialiseServer = function (app) {
     // Ensures all players view the same scene
     socket.on('sceneChanged', (scene) => {
       io.emit('sceneChange', scene);
+      console.log('scene changed ' + scene);
     });
 
     // Generates locations for locks & keys in drag & drop minigame
@@ -150,14 +151,20 @@ module.exports.initialiseServer = function (app) {
       }
     });
 
+    // Player completed drag minigame
+    socket.once('finishedDrag', () => {
+      io.emit('sceneChange', 'collect');
+    });
+
     // Player completed collection minigame
     socket.once('finishedCollect', () => {
       io.emit('sceneChange', 'discussion');
     });
 
     // Voting started
-    socket.on('votingStart', () => {
+    socket.once('votingStart', () => {
       io.to(socket.id).emit('votingData', (players));
+      console.log('data sent ' + socket.id);
     });
 
     socket.on('sendVote', (vote, socketID) => {

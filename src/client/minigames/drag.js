@@ -128,7 +128,7 @@ class Drag extends Phaser.Scene {
                 }
 
                 if (locks.getChildren().filter(e => e.active === true).length === 0) {
-                  socket.emit('sceneChanged', 'collect');
+                  socket.emit('finishedDrag');
                 }
               }
             });
